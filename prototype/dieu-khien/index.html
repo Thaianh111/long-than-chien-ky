@@ -57,6 +57,8 @@ const T = {
   WALL_JUMP_VX: 175,      // lực bật ngang khi nhảy tường
   WALL_JUMP_VY: 410,      // lực bật dọc khi nhảy tường
   WALL_JUMP_LOCK: 0.13,   // khóa điều khiển sau khi bật tường
+  WALL_KICK_VX: 90,       // giữ hướng VÀO tường + nhảy: đạp nhẹ để leo lên chính bức tường đó
+  WALL_KICK_LOCK: 0.06,   // khóa điều khiển khi đạp leo tường
   HITSTOP: 0.055,         // khựng hình khi chém trúng
   SHAKE: 2.5,             // rung màn hình khi chém trúng
   COMBO: [                // 3 nhát chém
@@ -215,9 +217,11 @@ function updatePlayer(dt) {
       P.dashMomentum = !!(P.dash || held.dash); P.dash = 0; P.ground = false;
     } else if (!P.ground && (P.wall || touchingWall(-1) || touchingWall(1))) {
       const w = P.wall || (touchingWall(1) ? 1 : -1);
+      const climb = dirIn === w;              // giữ hướng vào tường = leo lên chính bức tường
       P.dashMomentum = !!held.dash;
-      P.vx = -w * (P.dashMomentum ? T.DASH_SPEED : T.WALL_JUMP_VX);
-      P.vy = -T.WALL_JUMP_VY; P.face = -w; P.wallLock = T.WALL_JUMP_LOCK; P.jumpBuf = 0; P.wall = 0;
+      P.vx = -w * (P.dashMomentum ? T.DASH_SPEED : climb ? T.WALL_KICK_VX : T.WALL_JUMP_VX);
+      P.vy = -T.WALL_JUMP_VY; P.face = climb && !P.dashMomentum ? w : -w;
+      P.wallLock = climb && !P.dashMomentum ? T.WALL_KICK_LOCK : T.WALL_JUMP_LOCK; P.jumpBuf = 0; P.wall = 0;
       sparks(P.x + (w > 0 ? P.w : 0), P.y + P.h - 4, 6, '#ffd34d');
     }
   }
