@@ -75,6 +75,10 @@ const T = {
 /* ---------------- hình nhân vật ---------------- */
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
+// các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FW = 150, FH = 110;
+const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
 /* ---------------- màn chơi (vẽ bằng khối ô) ---------------- */
 const TS = 32, MW = 110, MH = 17;
@@ -367,11 +371,25 @@ function drawSwing() {
   cx.globalAlpha = 1;
 }
 
+
+function pickFrame() {
+  if (P.atk) {
+    const pre = P.atkT < P.atk.from;
+    if (P.atkAir) return 'x_overhead';
+    if (P.combo === 0) return pre ? 'windup' : 'slash_thrust';
+    if (P.combo === 1) return pre ? 'slash_thrust' : 'slash_up';
+    return pre ? 'slash_up' : 'slash_thrust';
+  }
+  if (P.dash) return 'dash';
+  if (P.wall || !P.ground) return 'jump';
+  if (Math.abs(P.vx) > 40) return Math.floor(time * 8) % 2 ? 'run' : 'dash';
+  return 'idle';
+}
 function drawPlayer() {
   const sx = Math.round(P.x + P.w / 2 - cam.x), sy = Math.round(P.y + P.h - cam.y), f = P.face;
   for (const g of P.ghosts) {
     cx.save(); cx.globalAlpha = g.a * 0.45; cx.translate(Math.round(g.x + P.w / 2 - cam.x), Math.round(g.y + P.h - cam.y)); cx.scale(g.f, 1);
-    if (SPR.complete && SPR.naturalWidth) { cx.drawImage(SPR, -SPR_W / 2, -SPR_H); cx.globalCompositeOperation = 'source-atop'; cx.fillStyle = '#ff4a2a'; cx.fillRect(-SPR_W / 2, -SPR_H, SPR_W, SPR_H); }
+    const gf = FR.dash; if (gf.complete && gf.naturalWidth) { cx.drawImage(gf, -FW / 2, -FH + 2); }
     cx.restore();
   }
   cx.save();
@@ -381,13 +399,12 @@ function drawPlayer() {
   let lean = 0;
   if (P.dash) lean = -0.18; else if (!P.ground) lean = P.vy < 0 ? -0.06 : 0.05;
   if (P.atk && !P.atkAir) lean = P.combo === 2 ? -0.12 : -0.05;
-  cx.translate(0, -run); cx.transform(1, 0, lean, 1, 0, 0);
+  cx.translate(0, -run);
   if (P.wall) cx.scale(-1, 1);
-  if (SPR.complete && SPR.naturalWidth) cx.drawImage(SPR, -SPR_W / 2, -SPR_H);
-  else { cx.fillStyle = '#B3261E'; cx.fillRect(-11, -78, 22, 78); }
-  cx.translate(PIVOT.x - SPR_W / 2, PIVOT.y - SPR_H);
-  drawSwing();
-  drawBlade(P.bladeA, P.bladeL, Math.sin(time * 40) * 0.5 + 0.5);
+  const fr = FR[pickFrame()];
+  cx.save(); cx.translate(SWING_PIVOT.x, SWING_PIVOT.y); drawSwing(); cx.restore();
+  if (fr && fr.complete && fr.naturalWidth) cx.drawImage(fr, -FW / 2, -FH + 2);
+  else if (SPR.complete && SPR.naturalWidth) cx.drawImage(SPR, -SPR_W / 2, -SPR_H);
   cx.restore();
 }
 
