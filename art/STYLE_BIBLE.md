@@ -11,11 +11,11 @@
 | Loại | Kích thước |
 | --- | --- |
 | Ô tile | 16 × 16 px |
-| Khung nhân vật chính | 64 × 64 px (thân cao ~44 px) |
-| Trùm | 96 × 96 px hoặc 128 × 128 px |
+| Khung nhân vật chính | 96 × 96 px (thân cao ~84 px) — chốt sau thử ảnh gốc Xích Long; 64 px làm mất chi tiết giáp |
+| Trùm | 128 × 128 px hoặc 192 × 192 px |
 | Quái thường | 32 × 32 px hoặc 48 × 48 px |
 | Icon vũ khí / UI | 16 × 16 px và 32 × 32 px |
-| Màn hình game | 480 × 270 (phóng nguyên lần lên 1080p) |
+| Màn hình game | 640 × 360 (phóng nguyên 3 lần lên 1080p) |
 
 ## Viền và ánh sáng
 - Viền 1 px, màu tối của chính mảng màu đó (không dùng đen tuyền #000).
