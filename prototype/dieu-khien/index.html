@@ -41,7 +41,8 @@
    ========================================================= */
 const T = {
   GRAVITY: 3000,          // trọng lực
-  MAX_FALL: 1040,         // tốc độ rơi tối đa
+  MAX_FALL: 820,          // tốc độ rơi tối đa
+  FALL_GRAV: 0.78,        // lúc đang rơi xuống thì trọng lực nhân hệ số này (nhỏ = rơi chậm, nhảy lên không đổi)
   RUN_SPEED: 300,         // tốc độ chạy
   ACCEL_GROUND: 4400,     // tăng tốc trên đất
   ACCEL_AIR: 2600,        // đổi hướng trên không
@@ -75,9 +76,9 @@ const T = {
   BLADE_IDLE: 0.55,       // góc đao khi đứng (radian, 0 = thẳng ngang về trước)
   // 3 nhát chém kiểu đao laze: a0 -> a1 là góc quét lưỡi đao; len = hệ số dài lưỡi
   COMBO: [
-    { time: 0.23, from: 0.045, to: 0.10, a0: -2.5, a1: 1.15,  len: 1.0,  reach: 66, h: 80,  dmg: 1, lunge: 50,  knock: 240 },
-    { time: 0.24, from: 0.04, to: 0.10, a0: 1.25, a1: -2.45, len: 1.05, reach: 70, h: 84,  dmg: 1, lunge: 70,  knock: 280 },
-    { time: 0.36, from: 0.08, to: 0.15, a0: -2.3, a1: 1.3,  len: 1.4,  reach: 92, h: 110, dmg: 2, lunge: 220, knock: 520 },
+    { time: 0.29, from: 0.06, to: 0.135, a0: -2.5, a1: 1.15,  len: 1.0,  reach: 66, h: 80,  dmg: 1, lunge: 50,  knock: 240 },
+    { time: 0.30, from: 0.05, to: 0.135, a0: 1.25, a1: -2.45, len: 1.05, reach: 70, h: 84,  dmg: 1, lunge: 70,  knock: 280 },
+    { time: 0.44, from: 0.10, to: 0.20, a0: -2.3, a1: 1.3,  len: 1.4,  reach: 92, h: 110, dmg: 2, lunge: 220, knock: 520 },
   ],
   // --- hoạt ảnh (chỉ ảnh hưởng hình, không đổi cảm giác tay) ---
   SQUASH_K: 520,          // độ cứng lò xo co giãn (cao = bật về nhanh)
@@ -95,7 +96,8 @@ const T = {
   APEX_VY: 260,           // tốc độ dọc dưới mức này thì dùng dáng đỉnh nhảy
   LAND_TIME: 0.09,        // dáng khuỵu khi đáp (chỉ khi đứng yên, đang chạy thì chạy luôn)
   LAND_MIN_VY: 300,       // rơi nhanh hơn mức này mới khuỵu          // giữ dáng chém thêm chút sau nhát cuối cho khỏi giật về
-  AIR_SLASH: { time: 0.26, from: 0.02, to: 0.16, a0: -1.6, a1: 4.6, len: 1.2, reach: 76, h: 120, dmg: 1, lunge: 0, knock: 300 },
+  // chém xoay trên không: quay 2 vòng (a1 = a0 + 4π), mỗi vòng trúng 1 lần (spins)
+  AIR_SLASH: { time: 0.42, from: 0.03, to: 0.34, a0: -1.6, a1: -1.6 + Math.PI * 4, spins: 2, len: 1.2, reach: 76, h: 120, dmg: 1, lunge: 0, knock: 300 },
 };
 
 /* ---------------- hình nhân vật ---------------- */
@@ -190,7 +192,7 @@ const touchingWall = dir => { const x = dir > 0 ? P.x + P.w + 1 : P.x - 1; retur
 function startAttack() {
   const air = !P.ground;
   const step = air ? T.AIR_SLASH : T.COMBO[P.combo];
-  P.atk = step; P.atkT = 0; P.hitSet = new Set(); P.comboQueued = false; P.atkAir = air; P.swing = [];
+  P.atk = step; P.atkT = 0; P.hitSet = new Set(); P.comboQueued = false; P.atkAir = air; P.swing = []; P.spinK = 0;
   P.arc = { a0: step.a0, a1: step.a1, from: step.from, to: step.to, len: step.len, big: step.dmg > 1, t: 0, at: SWING_AT[air ? 'air' : P.combo] || SWING_AT[0] };
   sfxSwing(step.dmg > 1 ? 1.4 : air ? 1.15 : 1);
   if (!air && step.lunge) P.vx = P.face * step.lunge * 2.2;
@@ -253,6 +255,7 @@ function updatePlayer(dt) {
   if (P.atk && P.atkT >= P.atk.from && P.atkT <= P.atk.to + 0.02) P.swing.push({ a: P.bladeA, l: P.bladeL, life: 0.12 });
   for (const s of P.swing) s.life -= dt;
   P.swing = P.swing.filter(s => s.life > 0);
+  if (P.atk && P.atk.spins) { const k = Math.floor(Math.max(0, P.atkT - P.atk.from) / (P.atk.to - P.atk.from) * P.atk.spins); if (k !== P.spinK && k < P.atk.spins) { P.spinK = k; P.hitSet = new Set(); } }
   if (P.arc) { P.arc.t += dt; if (P.arc.t > P.arc.to + T.ARC_FADE) P.arc = null; }
   const groundSlashing = P.atk && !P.atkAir;
 
@@ -316,7 +319,7 @@ function updatePlayer(dt) {
 
   // --- trọng lực ---
   if (!(P.dash && !P.ground)) {
-    P.vy = Math.min(P.vy + T.GRAVITY * dt, T.MAX_FALL);
+    P.vy = Math.min(P.vy + T.GRAVITY * (P.vy > 0 ? T.FALL_GRAV : 1) * dt, T.MAX_FALL);
     if (P.wall && P.vy > T.WALL_SLIDE) { P.vy = T.WALL_SLIDE; if (Math.random() < 0.3) sparks(P.x + (P.wall > 0 ? P.w : 0), P.y + 12, 1, '#ffb347'); }
   }
 
@@ -472,7 +475,8 @@ function drawSwing() {
   const A = P.arc; if (!A || A.t < A.from) return;
   const open = easeOut(Math.min(1, (A.t - A.from) / (A.to - A.from)));
   const fade = Math.max(0, (A.t - A.to) / T.ARC_FADE);           // 0..1 sau khi vung xong
-  const head = open, tail = Math.min(head, fade * fade * 1.0);
+  const span = Math.abs(A.a1 - A.a0), maxTail = Math.min(1, (Math.PI * 1.65) / span);
+  const head = open, tail = Math.min(head, Math.max(fade * fade, head - maxTail));
   if (head - tail < 0.02) return;
   const R = T.BLADE_LEN * T.ARC_R * (1 + (A.len - 1) * 0.45), W = T.ARC_W * (A.big ? 1.35 : 1) * (1 - fade * 0.5);
   cx.save(); cx.translate(A.at.x, A.at.y);
@@ -514,7 +518,7 @@ const ATKF = {
   0:   { pre: ['s1_1'], act: ['s1_2', 's1_3'], post: ['s1_4'], rec: 's1_5' },
   1:   { pre: ['s2_1'], act: ['s2_2', 's2_3'], post: ['s2_4'], rec: 's2_5' },
   2:   { pre: ['s3_1', 's3_2'], act: ['s3_3', 's3_4'], post: ['s3_5'], rec: 's3_6' },
-  air: { pre: ['as1'], act: ['as2', 'as3'], post: ['as4', 'as5'], rec: 'as5' },
+  air: { pre: ['as1'], act: ['as2', 'as3', 'as2', 'as3'], post: ['as4', 'as5'], rec: 'as5' },
 };
 function atkFrame(endPose) {
   const a = P.atk; if (!a) return null;
