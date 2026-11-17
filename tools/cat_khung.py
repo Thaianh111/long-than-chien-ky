@@ -18,6 +18,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('sheet'); ap.add_argument('outdir'); ap.add_argument('name')
 ap.add_argument('--cao', type=int, default=84); ap.add_argument('--hang', type=int, default=1)
 ap.add_argument('--cot', type=int, default=8)
+ap.add_argument('--theo', type=int, default=0, help='lấy chiều cao của khung số K (đứng thẳng, không giơ đao) để tính tỉ lệ; 0 = khung cao nhất')
 ap.add_argument('--rieng', action='store_true', help='mỗi khung tự đặt chân chạm đáy (dùng cho dáng nhảy ở các độ cao khác nhau)')
 ap.add_argument('--tach', action='store_true', help='tách theo hình dáng (khi các dáng chạm/lấn nhau) thay vì chia lưới đều')
 a = ap.parse_args()
@@ -87,7 +88,7 @@ else:
             c = clean(sheet.crop((i * cw, j * ch, (i + 1) * cw, (j + 1) * ch)))
             bb = c.getchannel('A').point(lambda v: 255 if v > 128 else 0).getbbox()
             if bb: cells.append((c, bb))
-tallest = max(bb[3] - bb[1] for _, bb in cells)
+tallest = (cells[a.theo - 1][1][3] - cells[a.theo - 1][1][1]) if a.theo else max(bb[3] - bb[1] for _, bb in cells)
 ground = max(bb[3] for _, bb in cells)            # đường đất chung của cả tấm
 scale = a.cao / tallest
 pal = palette()
