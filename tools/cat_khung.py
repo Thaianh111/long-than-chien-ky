@@ -22,6 +22,7 @@ ap.add_argument('--theo', type=int, default=0, help='lấy chiều cao của khu
 ap.add_argument('--tile', type=float, default=0, help='tỉ lệ thu nhỏ đặt thẳng (vd 0.19), bỏ qua --cao/--theo')
 ap.add_argument('--rieng', action='store_true', help='mỗi khung tự đặt chân chạm đáy (dùng cho dáng nhảy ở các độ cao khác nhau)')
 ap.add_argument('--nen', default='xanh', choices=['xanh', 'hong'], help='màu nền tách: xanh = #00FF00, hong = magenta #FF00FF (nhân vật màu xanh như Thanh Vũ)')
+ap.add_argument('--bang', default='', help='lấy bảng màu từ thư mục khung này (vd art/characters/thanh_vu/frames); "rieng" = lấy từ chính tấm hình; bỏ trống = khung Xích Long')
 ap.add_argument('--tach', action='store_true', help='tách theo hình dáng (khi các dáng chạm/lấn nhau) thay vì chia lưới đều')
 a = ap.parse_args()
 FW, FH = 150, 110
@@ -48,7 +49,10 @@ def key_green(im):
     return Image.fromarray(arr.astype('uint8'), 'RGBA')
 
 def palette():
-    imgs = [Image.open(f).convert('RGBA') for f in sorted(glob.glob(os.path.join(REF, '*.png')))]
+    if a.bang == 'rieng':
+        px = np.array(sheet).reshape(-1, 4); px = px[px[:, 3] > 128][:, :3]
+        return Image.fromarray(px.reshape(1, -1, 3).astype('uint8'), 'RGB').quantize(48, method=Image.Quantize.MEDIANCUT)
+    imgs = [Image.open(f).convert('RGBA') for f in sorted(glob.glob(os.path.join(a.bang or REF, '*.png')))]
     px = np.concatenate([np.array(i).reshape(-1, 4) for i in imgs])
     px = px[px[:, 3] > 128][:, :3]
     pal = Image.fromarray(px.reshape(1, -1, 3).astype('uint8'), 'RGB').quantize(48, method=Image.Quantize.MEDIANCUT)
