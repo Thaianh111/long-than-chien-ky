@@ -144,7 +144,7 @@ const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
 const BG = {}; ['skyline-a','buildings-bg','near-buildings-bg'].forEach(n => { BG[n] = new Image(); BG[n].src = 'bg/' + n + '.png'; });
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3','tv_w1','tv_w2','tv_w3','en_drone1','en_drone2','en_drone3','en_drone4','en_turret1','en_turret2','en_turret3','en_turret4','en_turret5','en_turret6','fx_boom1','fx_boom2','fx_boom3','fx_boom4','fx_boom5','fx_boom6','fx_shot1','fx_shot2','fx_shot3','fx_shothit1','fx_shothit2','fx_shothit3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3','tv_w1','tv_w2','tv_w3','en_drone1','en_drone2','en_drone3','en_drone4','en_turret1','en_turret2','en_turret3','en_turret4','en_turret5','en_turret6','fx_boom1','fx_boom2','fx_boom3','fx_boom4','fx_boom5','fx_boom6','fx_shot1','fx_shot2','fx_shot3','fx_shothit1','fx_shothit2','fx_shothit3','bt_i1','bt_i2','bt_i3','bt_i4'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -1045,7 +1045,7 @@ let arenaWater = 0, arenaHaz = 0, lvWaterRise = null, talk = null;
 
 function bossFloor() { return 15 * TS; }
 function bossReset() {
-  Object.assign(B, { st: 'wait', x: BOSS_ARENA.x1 - 120, y: bossFloor(), w: 56, h: 112, hp: BT.HP, face: -1, inv: 0, t: 0, phase: 0,
+  Object.assign(B, { st: 'wait', x: BOSS_ARENA.x1 - 120, y: bossFloor(), w: 64, h: 120, hp: BT.HP, face: -1, inv: 0, t: 0, phase: 0,
     last: [], floodCd: 0, lostSince: 0, flash: 0, vy: 0, fly: 0, anim: 'idle', stun: 0 });
   bproj.length = 0; arenaWater = 0; arenaHaz = 0; talk = null;
   if (B.gateShut) { rect(158, 12, 1, 3, 0); B.gateShut = false; }
@@ -1184,7 +1184,7 @@ function atkStep(dt, pcx, A, fl) {
     }
     if (m === 'flood') {
       const t = B.t, F = BT.FLOOD, base = BT.WATER_P2;
-      B.fly = 1; B.y += ((fl - 150) - B.y) * Math.min(1, dt * 4);
+      B.fly = 1; B.y += ((fl - 185) - B.y) * Math.min(1, dt * 4);
       arenaHaz = t < F.UP ? base + (F.PEAK - base) * t / F.UP : t < F.UP + F.HOLD ? F.PEAK : Math.max(base, F.PEAK - (F.PEAK - base) * (t - F.UP - F.HOLD) / F.DOWN);
     }
     if (B.stage === 'A' && B.t >= S.A) {
@@ -1284,6 +1284,29 @@ function drawBoss(ox, oy) {
   // báo hiệu mưa giáo: vòng gợn trên sàn
   if (B.st === 'atk' && B.move === 'spears' && B.stage === 'W') for (const x of B.spots) { cx.strokeStyle = '#8ff0ff'; cx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 20); cx.beginPath(); cx.ellipse(x - ox, bossFloor() - oy - 2, 18, 4, 0, 0, 6.283); cx.stroke(); cx.globalAlpha = 1; }
   if (B.st === 'atk' && B.move === 'dash' && B.stage === 'W') { cx.fillStyle = 'rgba(143,240,255,.5)'; cx.fillRect(f > 0 ? X : X - 600, Y - 3, 600, 2); }
+  const spr = FR['bt_i' + (1 + Math.floor(time / 0.45) % 4)];
+  if (spr && spr.complete && spr.width) {
+    // hình Gemini: quay mặt TRÁI, chân ở hàng 148, tâm thân x≈60
+    const k = B.anim; let rot = 0, sx = 1, sy = 1, dx = 0;
+    if (k === 'thrust' && B.stage === 'W') { rot = 0.08; dx = 6; }
+    if (k === 'thrust' && B.stage === 'A' || k === 'stuck') { rot = -0.14; dx = -10; }
+    if (k === 'slam') { sx = 1.08; sy = 0.92; }
+    if (k === 'cast' || k === 'guard') { sy = 1 + Math.sin(time * 14) * 0.015; }
+    if (k === 'roar') { sx = 1 + Math.sin(time * 40) * 0.03; sy = 1.04; }
+    if (k === 'hurt') { rot = 0.1; }
+    if (B.st === 'atk' && B.move === 'dash' && B.stage === 'A') {   // bóng mờ khi lao
+      cx.save(); cx.globalAlpha = 0.3; cx.globalCompositeOperation = 'lighter';
+      for (let i = 1; i <= 3; i++) { cx.save(); cx.translate(X - f * i * 26, Y); cx.scale(-f, 1); cx.drawImage(spr, -60, -148); cx.restore(); }
+      cx.restore();
+    }
+    cx.save(); cx.translate(X + sh, Y); cx.scale(-f, 1); cx.translate(dx, 0); cx.rotate(rot); cx.scale(sx, sy);
+    cx.drawImage(spr, -60, -148);
+    if (B.flash > 0 || B.phase && Math.sin(time * 5) > 0.6 || k === 'roar') {   // trúng đòn chớp trắng, pha 2 ánh tím
+      cx.globalCompositeOperation = 'lighter'; cx.globalAlpha = B.flash > 0 ? 0.8 : 0.25;
+      cx.filter = B.flash > 0 ? 'brightness(2)' : 'hue-rotate(60deg)'; cx.drawImage(spr, -60, -148); cx.filter = 'none';
+    }
+    cx.restore();
+  } else {
   cx.save(); cx.translate(X + sh, Y); cx.scale(f, 1);
   const hit = B.flash > 0, C = (c) => hit ? '#ffffff' : c;
   const k = B.anim, bob = k === 'idle' ? Math.sin(time * 3) * 2 : 0;
@@ -1315,6 +1338,7 @@ function drawBoss(ox, oy) {
   cx.restore();
   cx.fillStyle = C('#1B4F8A'); cx.fillRect(12, -100 + bob, 12, 10);
   cx.restore();
+  }
   // khiên nước
   if (B.st === 'atk' && B.move === 'shield' && B.stage === 'A') {
     const sx = X + f * 40; cx.globalAlpha = 0.45 + 0.15 * Math.sin(time * 12); cx.fillStyle = '#5fd3ff'; cx.fillRect(sx - 12, Y - 140, 24, 140);
