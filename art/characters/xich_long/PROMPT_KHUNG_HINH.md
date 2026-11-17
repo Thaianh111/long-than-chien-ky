@@ -17,7 +17,7 @@ Use the attached character as the exact reference: same red-and-gold Vietnamese 
 | 3 | ✅ Lướt, 3 khung (đã có, `sheets/luot_3_khung_gemini.png`) | `3 frames of a ground dash: push-off lean, full forward dash low to the ground with coat streaming back, braking stop with heels skidding.` |
 | 4 | ✅ Chém nhát 1, 5 khung (đã có, `sheets/chem1_5_khung_gemini.png`) | `5-frame downward diagonal saber slash: anticipation (saber raised behind head), start of swing, mid-swing with motion smear, saber low in front, recovery.` |
 | 5 | ✅ Chém nhát 2, 5 khung (đã có, `sheets/chem2_5_khung_gemini.png`) | `5-frame upward saber slash: saber low in front, start rising, mid-swing with motion smear, saber high above head, recovery.` |
-| 6 | Chém nhát 3, 6 khung | `6-frame powerful finishing slash with a forward lunge: deep crouch anticipation, explosive step forward, wide horizontal swing with big smear, follow-through, hold, recovery.` |
+| 6 | ✅ Chém nhát 3, 6 khung (đã có, `sheets/chem3_6_khung_gemini.png`) | `6-frame powerful finishing slash with a forward lunge: deep crouch anticipation, explosive step forward, wide horizontal swing with big smear, follow-through, hold, recovery.` |
 | 7 | Bám tường + đạp tường, 3 khung | `3 frames: sliding down a wall on the RIGHT side (back to the wall, one hand and foot against it, sparks under the foot), kicking off the wall, jumping away.` |
 | 8 | Đứng thở, 4 khung | `4-frame idle breathing loop, subtle chest and coat-tail movement, saber resting low.` |
 | 9 | Chém trên không, 5 khung | `5-frame airborne spinning saber slash, body tucked, full 360 degree swing with circular smear.` |
