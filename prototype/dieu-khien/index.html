@@ -128,7 +128,7 @@ const T = {
     RECOIL: [0, 120, 320],      // bị giật lùi khi bắn (px/giây)
     RELOAD: 0.14,         // nghỉ giữa 2 phát
     SHOOT_ANIM: 0.22,     // giữ dáng bắn sau khi nhả tên
-    MUZZLE: { x: 29, y: -66 },  // đầu nỏ so với chân (dáng ngắm)
+    MUZZLE: { x: 25, y: -66 },  // đầu nỏ so với chân (dáng ngắm)
   },
   AIR_SLASH: { time: 0.42, from: 0.03, to: 0.34, a0: -1.6, a1: -1.6 + Math.PI * 4, spins: 2, len: 1.2, reach: 76, h: 120, dmg: 1, lunge: 0, knock: 300 },
 };
@@ -137,7 +137,7 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -610,7 +610,8 @@ function drawSwing() {
 // Điểm neo của từng dáng = vị trí HÔNG trong khung 150x110 (chân luôn chạm đáy khung).
 // Trước đây mọi dáng đều canh giữa khung nên đổi dáng là thân người nhảy ngang tới 30px -> giật.
 // w1 neo theo tay chạm tường (mép phải hitbox), không theo hông
-const FA = { tv_mau: 73, tv_b1: 67, tv_b2: 69, tv_b3: 69, tv_b4: 71,
+// Thanh Vũ neo theo bàn chân (so khớp phần chân với hình mẫu) để bắn mà chân không xê dịch
+const FA = { tv_mau: 73, tv_b1: 73, tv_b2: 74, tv_b3: 74, tv_b4: 75, tv_i1: 75, tv_i2: 77, tv_i3: 77, tv_i4: 75,
   as1: 83, as2: 77, as3: 79, as4: 74, as5: 77,
   id1: 72, id2: 69, id3: 70, id4: 69,
   w1: 83, w2: 76, w3: 76,
@@ -630,7 +631,8 @@ const FY = { as1: 4, as2: -7, as3: -1, as4: -1,
 // Tâm vệt chém (vai) so với chân, theo từng nhát
 const SWING_AT = { 0: { x: 6, y: -58 }, 1: { x: 4, y: -60 }, 2: { x: 2, y: -52 }, air: { x: 2, y: -58 } };
 // Thêm khung mới: bỏ file vào frames/ rồi ghi tên vào đây theo thứ tự (vd run: ['run1','run2',...]).
-const ANIM = { idle: ['id1', 'id2', 'id3', 'id4', 'id3', 'id2'], run: ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'], takeoff: ['jump1'], jump_up: ['jump2'], apex: ['jump3'], jump_down: ['jump4'], land: ['jump5'], wall: ['w1'], wall_kick: ['w2'], wall_jump: ['w3'], dash: ['dash2'], dash_start: ['dash1'], dash_stop: ['dash3'] };
+const ANIM = { tv_idle: ['tv_i1', 'tv_i2', 'tv_i3', 'tv_i4', 'tv_i3', 'tv_i2'],
+  idle: ['id1', 'id2', 'id3', 'id4', 'id3', 'id2'], run: ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'], takeoff: ['jump1'], jump_up: ['jump2'], apex: ['jump3'], jump_down: ['jump4'], land: ['jump5'], wall: ['w1'], wall_kick: ['w2'], wall_jump: ['w3'], dash: ['dash2'], dash_start: ['dash1'], dash_stop: ['dash3'] };
 
 // Khung từng nhát chém: pre = lấy đà, act = lúc vung (chia đều theo thời gian vung),
 // post = cuối nhát (giữ tới khi hết nhát), rec = dáng thu đao khi dứt combo.
@@ -654,7 +656,7 @@ function pickFrame() {
   if (HERO === 'tv') {
     if (P.shootT > 0) return P.shootT > T.TV.SHOOT_ANIM - 0.07 ? 'tv_b3' : 'tv_b4';
     if (P.aiming) return P.aimT < 0.05 ? 'tv_b1' : 'tv_b2';
-    return 'tv_mau';
+    return seq('tv_idle', time, T.IDLE_FPS);
   }
   if (P.atk) return atkFrame();
   if (P.recover > 0 && P.recFrame) return P.recFrame;
