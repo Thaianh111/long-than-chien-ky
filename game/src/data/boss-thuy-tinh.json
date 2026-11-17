@@ -1,0 +1,123 @@
+{
+  "HP": 32,
+  "P2": 16,
+  "TOUCH": 3,
+  "INV": 0.2,
+  "WALK": [
+    90,
+    120
+  ],
+  "IDLE": [
+    0.8,
+    0.5
+  ],
+  "WAVE": {
+    "W": 0.6,
+    "R": 0.7,
+    "SPD": 280,
+    "H": 48,
+    "H2": 112,
+    "DMG": 3,
+    "GAP2": 0.45
+  },
+  "DASH": {
+    "W": [
+      0.5,
+      0.4
+    ],
+    "SPD": [
+      560,
+      640
+    ],
+    "R": 1.1,
+    "DMG": 4
+  },
+  "BUB": {
+    "W": 0.45,
+    "N": [
+      3,
+      4
+    ],
+    "GAP": [
+      0.25,
+      0.2
+    ],
+    "VX": [
+      160,
+      220,
+      280,
+      250
+    ],
+    "VY": 380,
+    "G": 900,
+    "R": 0.6,
+    "DMG": 2,
+    "REFL": 2,
+    "SIZE": 12
+  },
+  "SHIELD": {
+    "W": 0.4,
+    "HOLD": [
+      3,
+      2.5
+    ],
+    "DROP": [
+      1,
+      0.8
+    ],
+    "STUN": 1.5,
+    "DMG": 2
+  },
+  "SPEAR": {
+    "W": [
+      0.8,
+      0.7
+    ],
+    "N": [
+      6,
+      8
+    ],
+    "SPD": 480,
+    "DMG": 2,
+    "R": 0.6
+  },
+  "FLOOD": {
+    "W": 1,
+    "UP": 0.6,
+    "HOLD": 1.8,
+    "DOWN": 0.6,
+    "PEAK": 176,
+    "TICK": 0.5,
+    "DMG": 2,
+    "CD": 12,
+    "R": 0.8
+  },
+  "WATER_P2": 64,
+  "SHIFT": 2.5,
+  "WEIGHT": [
+    {
+      "wave": 3,
+      "dash": 3,
+      "bubbles": 3,
+      "shield": 2,
+      "spears": 2,
+      "flood": 0
+    },
+    {
+      "wave": 3,
+      "dash": 3,
+      "bubbles": 3,
+      "shield": 2,
+      "spears": 3,
+      "flood": 0
+    }
+  ],
+  "LINE_IN": [
+    "Thủy dâng vạn trượng — ấy là lẽ trời.",
+    "Phàm nhân, ngươi lấy gì giữ sơn hà?"
+  ],
+  "LINE_OUT": [
+    "Nước… rồi cũng phải rút…",
+    "Giữ lấy sơn hà, hậu duệ Long Quân."
+  ]
+}

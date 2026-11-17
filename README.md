@@ -21,9 +21,11 @@ Tóm tắt: AI điều hành quốc gia **Thiên Lý** muốn "giữ sơn hà" b
 6. Trùm Thiên Lý bản rút gọn
 7. Màn mở đầu VTA Games và lưu game
 
-Engine: Unity, PC + điện thoại.
+Nền tảng: web (TypeScript + Vite) — chơi trên trình duyệt PC và điện thoại, sau đóng APK Android như Lu Troll. (Đổi từ Unity sang web ngày 2026-11-17 để Claude tự chạy thử được.)
 
 ## Thư mục
+
+- `game/` — **bản chính thức** (TypeScript + Vite, chạy trên web, có test). Xem `game/README.md`.
 
 - `prototype/dieu-khien/` — bản thử điều khiển Xích Long (HTML, vứt đi sau khi thử; không đưa code này vào game thật). Chỉnh cảm giác tay ở khối `T` đầu file.
   - Hoạt ảnh: mỗi dáng có điểm neo hông riêng (`FA`) nên đổi dáng không bị giật ngang; nhân vật vẽ nội suy giữa các bước vật lý (mượt trên màn 60/90/120Hz); có co giãn khi nhảy, đáp, lướt, quay đầu; nhún theo bước chạy; bóng mờ khi lướt; giữ dáng chém thêm một nhịp khi dứt combo.
