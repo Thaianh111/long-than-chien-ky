@@ -59,16 +59,25 @@ const T = {
   WALL_JUMP_LOCK: 0.13,   // khóa điều khiển sau khi bật tường
   WALL_KICK_VX: 180,      // giữ hướng VÀO tường + nhảy: đạp nhẹ để leo lên chính bức tường đó
   WALL_KICK_LOCK: 0.06,   // khóa điều khiển khi đạp leo tường
-  HITSTOP: 0.055,         // khựng hình khi chém trúng
-  SHAKE: 4,               // rung màn hình khi chém trúng
+  HITSTOP: 0.075,         // khựng hình khi chém trúng (nhát cuối x FINISH_STOP)
+  FINISH_STOP: 1.9,       // nhát kết liễu khựng lâu hơn bao nhiêu lần
+  SHAKE: 6,               // rung màn hình khi chém trúng
+  // --- vệt chém bán nguyệt kiểu Zero ---
+  ARC_R: 0.92,            // bán kính vệt so với lưỡi đao
+  ARC_W: 17,              // độ dày chỗ dày nhất của vệt (px)
+  ARC_FADE: 0.08,
+  HIT_AT: 0.4,            // đao quét được bao nhiêu phần thì bắt đầu tính trúng (0..1)         // vệt thu lại từ đuôi tới đầu trong bao lâu sau nhát chém (giây)
+  // --- nhảy 2 bậc ---
+  AIR_JUMPS: 1,           // số lần nhảy thêm trên không (0 = tắt)
+  AIR_JUMP_VEL: 760,      // lực nhảy bậc 2
   BLADE_LEN: 58,          // chiều dài lưỡi đao laze
   TRAIL_R: 0.85,          // bán kính vệt chém so với lưỡi đao
   BLADE_IDLE: 0.55,       // góc đao khi đứng (radian, 0 = thẳng ngang về trước)
   // 3 nhát chém kiểu đao laze: a0 -> a1 là góc quét lưỡi đao; len = hệ số dài lưỡi
   COMBO: [
-    { time: 0.23, from: 0.045, to: 0.11, a0: -2.2, a1: 1.0,  len: 1.0,  reach: 66, h: 80,  dmg: 1, lunge: 50,  knock: 240 },
-    { time: 0.24, from: 0.04, to: 0.11, a0: 1.1,  a1: -2.0, len: 1.05, reach: 70, h: 84,  dmg: 1, lunge: 70,  knock: 280 },
-    { time: 0.36, from: 0.08, to: 0.17, a0: -1.3, a1: 0.7,  len: 1.4,  reach: 92, h: 110, dmg: 2, lunge: 220, knock: 520 },
+    { time: 0.23, from: 0.045, to: 0.10, a0: -2.5, a1: 1.15,  len: 1.0,  reach: 66, h: 80,  dmg: 1, lunge: 50,  knock: 240 },
+    { time: 0.24, from: 0.04, to: 0.10, a0: 1.25, a1: -2.45, len: 1.05, reach: 70, h: 84,  dmg: 1, lunge: 70,  knock: 280 },
+    { time: 0.36, from: 0.08, to: 0.15, a0: -2.3, a1: 1.3,  len: 1.4,  reach: 92, h: 110, dmg: 2, lunge: 220, knock: 520 },
   ],
   // --- hoạt ảnh (chỉ ảnh hưởng hình, không đổi cảm giác tay) ---
   SQUASH_K: 520,          // độ cứng lò xo co giãn (cao = bật về nhanh)
@@ -157,7 +166,7 @@ function pollInput() {
 const P = { w: 22, h: 78 };
 function resetPlayer(cp) {
   Object.assign(P, { x: cp.x, y: cp.y - P.h, vx: 0, vy: 0, face: 1, ground: false, coyote: 0, jumpBuf: 0,
-    dash: 0, dashHeld: 0, airDashes: T.AIR_DASHES, dashMomentum: false, wall: 0, wallLock: 0,
+    dash: 0, dashHeld: 0, airDashes: T.AIR_DASHES, airJumps: T.AIR_JUMPS, dj: 0, dashMomentum: false, wall: 0, wallLock: 0,
     atk: null, atkT: 0, combo: 0, comboQueued: false, hitSet: new Set(), ghosts: [], swing: [], bladeA: T.BLADE_IDLE, bladeL: 1,
     ox: cp.x, oy: cp.y - P.h, sqx: 1, sqy: 1, vsx: 0, vsy: 0, gait: 0, ghostT: 0, recover: 0, recFrame: null, turnT: 0, lastFace: 1, airT: 0 });
 }
@@ -182,6 +191,8 @@ function startAttack() {
   const air = !P.ground;
   const step = air ? T.AIR_SLASH : T.COMBO[P.combo];
   P.atk = step; P.atkT = 0; P.hitSet = new Set(); P.comboQueued = false; P.atkAir = air; P.swing = [];
+  P.arc = { a0: step.a0, a1: step.a1, from: step.from, to: step.to, len: step.len, big: step.dmg > 1, t: 0, at: SWING_AT[air ? 'air' : P.combo] || SWING_AT[0] };
+  sfxSwing(step.dmg > 1 ? 1.4 : air ? 1.15 : 1);
   if (!air && step.lunge) P.vx = P.face * step.lunge * 2.2;
 }
 const easeOut = t => 1 - Math.pow(1 - t, 3);
@@ -211,6 +222,7 @@ function updateAnim(dt) {
   P.wasDash = !!P.dash;
   P.recover = Math.max(0, P.recover - dt);
   P.wjT = Math.max(0, (P.wjT || 0) - dt); if (P.ground || P.wall || P.atk || P.dash) P.wjT = 0;
+  P.dj = Math.max(0, (P.dj || 0) - dt);
   P.landT = Math.max(0, (P.landT || 0) - dt); if (!P.ground || P.atk || P.dash) P.landT = 0;
   if (P.atk || P.dash || (!P.ground && P.recover)) P.recover = 0;
   P.airT = P.ground ? 0 : P.airT + dt;
@@ -241,6 +253,7 @@ function updatePlayer(dt) {
   if (P.atk && P.atkT >= P.atk.from && P.atkT <= P.atk.to + 0.02) P.swing.push({ a: P.bladeA, l: P.bladeL, life: 0.12 });
   for (const s of P.swing) s.life -= dt;
   P.swing = P.swing.filter(s => s.life > 0);
+  if (P.arc) { P.arc.t += dt; if (P.arc.t > P.arc.to + T.ARC_FADE) P.arc = null; }
   const groundSlashing = P.atk && !P.atkAir;
 
   // --- lướt ---
@@ -291,6 +304,12 @@ function updatePlayer(dt) {
       P.vy = -T.WALL_JUMP_VY; squash(0.85, 1.15); P.face = climb && !P.dashMomentum ? w : -w;
       P.wallLock = climb && !P.dashMomentum ? T.WALL_KICK_LOCK : T.WALL_JUMP_LOCK; P.jumpBuf = 0; P.wall = 0; P.wjT = T.WALLJUMP_ANIM; P.wjDir = w;
       sparks(P.x + (w > 0 ? P.w : 0), P.y + P.h - 8, 6, '#ffd34d');
+    } else if (!P.ground && pressed.jump && P.airJumps > 0) {
+      // nhảy bậc 2: bật giữa không trung, có vòng lửa dưới chân
+      P.airJumps--; P.vy = -T.AIR_JUMP_VEL; P.jumpBuf = 0; P.dash = 0; P.airT = 0;
+      squash(0.78, 1.22); P.dj = 0.22; sfxJump2();
+      fx.push({ k: 'ring', x: P.x + P.w / 2, y: P.y + P.h, life: 0.25, max: 0.25 });
+      sparks(P.x + P.w / 2, P.y + P.h, 8, '#ffb347');
     }
   }
   if (released.jump && P.vy < 0) P.vy *= T.JUMP_CUT;
@@ -304,6 +323,7 @@ function updatePlayer(dt) {
   P.x += P.vx * dt; collideX(P);
   const wasGround = P.ground, fallV = P.vy;
   P.y += P.vy * dt; collideY(P);
+  if (P.ground || P.wall) P.airJumps = T.AIR_JUMPS;
   if (P.ground) { P.airDashes = T.AIR_DASHES; if (!P.dash) P.dashMomentum = false; if (!wasGround) { dust(P.x + P.w / 2, P.y + P.h); if (fallV > T.LAND_MIN_VY) P.landT = T.LAND_TIME; const k = Math.min(1, fallV / T.MAX_FALL); squash(1 + 0.22 * k, 1 - 0.24 * k); } }
   if (P.ground && P.atkAir) { P.atk = null; P.combo = 0; }
 
@@ -321,7 +341,10 @@ function handPos() {
   return { x: sx + px, y: sy + PIVOT.y };
 }
 function slashBox() {
-  const a = P.atk; if (!a || P.atkT < a.from || P.atkT > a.to) return null;
+  // trúng khi lưỡi đao đã quét qua một đoạn (HIT_AT), để thấy vệt bán nguyệt bổ xuống rồi mới khựng
+  const a = P.atk; if (!a) return null;
+  const on = a.from + (a === T.AIR_SLASH ? 0 : (a.to - a.from) * T.HIT_AT);
+  if (P.atkT < on || P.atkT > a.to + 0.02) return null;
   const hp = handPos();
   const x = P.face > 0 ? hp.x - 14 : hp.x - a.reach + 14;
   return { x, y: hp.y - a.h / 2, w: a.reach, h: a.h };
@@ -355,19 +378,55 @@ function updateFoes(dt) {
     if (box && !P.hitSet.has(f) && box.x < f.x + f.w && box.x + box.w > f.x && box.y < f.y + f.h && box.y + box.h > f.y) {
       P.hitSet.add(f); f.hp -= P.atk.dmg; f.flash = 0.12;
       f.vx = P.face * P.atk.knock; if (f.type === 'drone') f.kby = -16; else f.vy = -240;
-      hitstop = T.HITSTOP * (P.atk.dmg > 1 ? 1.8 : 1); shake = T.SHAKE * (P.atk.dmg > 1 ? 2 : 1);
-      sparks(f.x + f.w / 2, f.y + f.h / 2, 10, '#ff6a2b'); hits++;
+      const big = P.atk.dmg > 1, cxh = f.x + f.w / 2, cyh = f.y + f.h / 2;
+      hitstop = T.HITSTOP * (big ? T.FINISH_STOP : 1); shake = T.SHAKE * (big ? 2.2 : 1);
+      // vết cắt sáng chéo qua quái + vòng nổ + mảnh văng theo hướng chém
+      fx.push({ k: 'cut', x: cxh, y: cyh, a: (P.face > 0 ? 0 : Math.PI) + (P.atk.a1 > P.atk.a0 ? 0.55 : -0.55), L: big ? 120 : 80, life: 0.14, max: 0.14 });
+      fx.push({ k: 'ring', x: cxh, y: cyh, life: big ? 0.22 : 0.16, max: big ? 0.22 : 0.16, big });
+      if (big) flashT = 0.06;
+      for (let i = 0; i < (big ? 18 : 10); i++) { const a = (P.face > 0 ? 0 : Math.PI) + (Math.random() - 0.5) * 1.6, sp = 200 + Math.random() * 420;
+        parts.push({ x: cxh, y: cyh, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120, life: 0.2 + Math.random() * 0.3, c: i % 3 ? '#ff6a2b' : '#fff1b8' }); }
+      sfxHit(big); hits++;
       if (f.hp <= 0) { f.dead = 2.5; sparks(f.x + f.w / 2, f.y + f.h / 2, 26, '#ffd34d'); kills++; }
     }
   }
+}
+
+/* ---------------- âm thanh (WebAudio, tự tạo, không file ngoài) ---------------- */
+let AC = null;
+function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = false; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+addEventListener('keydown', audio); addEventListener('pointerdown', audio);
+function noiseBuf(ac) { if (noiseBuf.b) return noiseBuf.b; const b = ac.createBuffer(1, ac.sampleRate * 0.4, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return (noiseBuf.b = b); }
+function sfxSwing(p) {              // tiếng vút: tiếng xì lọc dải quét từ cao xuống
+  const ac = AC; if (!ac) return; const t = ac.currentTime, n = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  n.buffer = noiseBuf(ac); f.type = 'bandpass'; f.Q.value = 1.4; f.frequency.setValueAtTime(3200 * p, t); f.frequency.exponentialRampToValueAtTime(700, t + 0.13 * p);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32 * p, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16 * p);
+  n.connect(f).connect(g).connect(ac.destination); n.start(t); n.stop(t + 0.3);
+}
+function sfxHit(big) {              // tiếng chém trúng: nổ trầm + tiếng xoẹt cao
+  const ac = AC; if (!ac) return; const t = ac.currentTime;
+  const o = ac.createOscillator(), g = ac.createGain(); o.type = 'square';
+  o.frequency.setValueAtTime(big ? 140 : 190, t); o.frequency.exponentialRampToValueAtTime(40, t + (big ? 0.22 : 0.12));
+  g.gain.setValueAtTime(big ? 0.35 : 0.25, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (big ? 0.25 : 0.14));
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.3);
+  const n = ac.createBufferSource(), f = ac.createBiquadFilter(), g2 = ac.createGain();
+  n.buffer = noiseBuf(ac); f.type = 'highpass'; f.frequency.value = 2500; g2.gain.setValueAtTime(0.3, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+  n.connect(f).connect(g2).connect(ac.destination); n.start(t); n.stop(t + 0.12);
+}
+function sfxJump2() {
+  const ac = AC; if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'triangle'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(900, t + 0.1);
+  g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.16);
 }
 
 /* ---------------- hiệu ứng ---------------- */
 const parts = [];
 function sparks(x, y, n, c) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, s = 80 + Math.random() * 320; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 80, life: 0.25 + Math.random() * 0.3, c }); } }
 function dust(x, y, n = 6) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 20, y, vx: (Math.random() - 0.5) * 120, vy: -Math.random() * 80, life: 0.3, c: '#9aa3b5' }); }
+function updateFx(dt) { for (const e of fx) e.life -= dt; for (let i = fx.length - 1; i >= 0; i--) if (fx[i].life <= 0) fx.splice(i, 1); flashT = Math.max(0, flashT - dt); }
 function updateParts(dt) { for (const p of parts) { p.life -= dt; p.vy += 1000 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } for (let i = parts.length - 1; i >= 0; i--) if (parts[i].life <= 0) parts.splice(i, 1); }
-let hitstop = 0, shake = 0, hits = 0, kills = 0, renderAlpha = 1;
+let hitstop = 0, shake = 0, hits = 0, kills = 0, renderAlpha = 1, flashT = 0;
+const fx = [];
 
 /* ---------------- vẽ ---------------- */
 let VW = 640; const VH = 360;
@@ -397,20 +456,30 @@ function drawBlade(a, len, flicker) {
   cx.fillStyle = '#C9A227'; cx.fillRect(-4, -3, 7, 6); cx.fillStyle = '#7a5a12'; cx.fillRect(-7, -2, 4, 4);
 }
 // vệt chém hình lưỡi liềm
-function drawSwing() {
-  // Vệt chém mỏng hình lưỡi liềm ở đầu đao. Khung hình mới đã tự vẽ vệt nhòe,
-  // nên vệt bằng code chỉ để nhấn thêm, không che hình nhân vật.
-  const sw = P.swing; if (sw.length < 2) return;
-  for (let i = 1; i < sw.length; i++) {
-    const a0 = sw[i - 1].a, a1 = sw[i].a, L = T.BLADE_LEN * T.TRAIL_R * sw[i].l, k = Math.min(1, sw[i].life / 0.12);
-    if (Math.abs(a1 - a0) < 0.001) continue;
-    const ccw = a1 < a0, w = 1 - i / sw.length * 0.5;
-    cx.globalAlpha = 0.45 * k; cx.fillStyle = '#ff4a1f';
-    cx.beginPath(); cx.arc(0, 0, L + 3, a0, a1, ccw); cx.arc(0, 0, L - 10 * w, a1, a0, !ccw); cx.closePath(); cx.fill();
-    cx.globalAlpha = 0.9 * k; cx.fillStyle = '#fff1b8';
-    cx.beginPath(); cx.arc(0, 0, L + 2, a0, a1, ccw); cx.arc(0, 0, L - 2, a1, a0, !ccw); cx.closePath(); cx.fill();
+// Vệt chém bán nguyệt kiểu Zero: hình lưỡi liềm nhọn hai đầu, dày ở giữa-đầu vệt,
+// mở ra theo lưỡi đao rồi thu lại từ đuôi. Vẽ quanh vai (gốc tọa độ hiện tại).
+function crescent(a0, a1, R, W, tail, head, shape) {
+  const N = 28; cx.beginPath();
+  for (let i = 0; i <= N; i++) { const u = tail + (head - tail) * i / N, a = a0 + (a1 - a0) * u; cx.lineTo(Math.cos(a) * R, Math.sin(a) * R); }
+  for (let i = N; i >= 0; i--) {
+    const u = tail + (head - tail) * i / N, a = a0 + (a1 - a0) * u, k = (u - tail) / Math.max(0.001, head - tail);
+    const w = W * Math.pow(Math.sin(Math.PI * Math.pow(k, 0.75)), shape);
+    cx.lineTo(Math.cos(a) * (R - w), Math.sin(a) * (R - w));
   }
-  cx.globalAlpha = 1;
+  cx.closePath(); cx.fill();
+}
+function drawSwing() {
+  const A = P.arc; if (!A || A.t < A.from) return;
+  const open = easeOut(Math.min(1, (A.t - A.from) / (A.to - A.from)));
+  const fade = Math.max(0, (A.t - A.to) / T.ARC_FADE);           // 0..1 sau khi vung xong
+  const head = open, tail = Math.min(head, fade * fade * 1.0);
+  if (head - tail < 0.02) return;
+  const R = T.BLADE_LEN * T.ARC_R * (1 + (A.len - 1) * 0.45), W = T.ARC_W * (A.big ? 1.35 : 1) * (1 - fade * 0.5);
+  cx.save(); cx.translate(A.at.x, A.at.y);
+  cx.globalAlpha = 0.35 * (1 - fade); cx.fillStyle = '#ff3d14'; crescent(A.a0, A.a1, R + 5, W + 9, tail, head, 0.8);
+  cx.globalAlpha = 0.95 * (1 - fade * 0.6); cx.fillStyle = '#ff8a2b'; crescent(A.a0, A.a1, R, W, tail, head, 0.9);
+  cx.globalAlpha = 1 - fade * 0.5; cx.fillStyle = '#fff6d0'; crescent(A.a0, A.a1, R - 1, W * 0.42, tail, head, 1);
+  cx.restore(); cx.globalAlpha = 1;
 }
 
 
@@ -506,7 +575,7 @@ function drawPlayer(alpha) {
   cx.translate(sx, sy - Math.round(bob)); cx.scale(name === ANIM.wall_kick[0] ? P.wjDir : f, 1);
   cx.rotate(rot);
   cx.scale(P.sqx, P.sqy);
-  if (P.atk || P.swing.length) { const sp = SWING_AT[P.atkAir ? 'air' : P.combo] || SWING_AT[0]; cx.save(); cx.translate(sp.x, sp.y); drawSwing(); cx.restore(); }
+  drawSwing();
   drawPose(name);
   cx.restore();
 }
@@ -544,6 +613,20 @@ function draw() {
   }
   drawPlayer(renderAlpha);
   for (const p of parts) { cx.globalAlpha = Math.min(1, p.life * 3); cx.fillStyle = p.c; cx.fillRect(Math.round(p.x - ox), Math.round(p.y - oy), 3, 3); }
+  for (const e of fx) {
+    const k = e.life / e.max; cx.save(); cx.translate(Math.round(e.x - ox), Math.round(e.y - oy));
+    if (e.k === 'cut') {       // vết cắt: đường sáng mảnh kéo dài rồi thu lại
+      cx.rotate(e.a); const L = e.L * (1.2 - k * 0.4);
+      cx.globalAlpha = k; cx.fillStyle = '#fff6d0'; cx.fillRect(-L / 2, -2 * k - 0.5, L, 4 * k + 1);
+      cx.globalAlpha = k * 0.5; cx.fillStyle = '#ff8a2b'; cx.fillRect(-L / 2, -5 * k, L, 10 * k);
+    } else if (e.k === 'ring') {
+      const r = (1 - k) * (e.big ? 46 : 30) + 6; cx.globalAlpha = k; cx.strokeStyle = '#ffd34d'; cx.lineWidth = 3 * k + 1;
+      cx.beginPath(); cx.arc(0, 0, r, 0, 6.283); cx.stroke();
+    }
+    cx.restore();
+  }
+  cx.globalAlpha = 1;
+  if (flashT > 0) { cx.globalAlpha = flashT / 0.06 * 0.35; cx.fillStyle = '#fff1d6'; cx.fillRect(0, 0, VW, VH); cx.globalAlpha = 1; }
   cx.globalAlpha = 1;
   cx.fillStyle = 'rgba(243,230,196,.75)'; cx.font = '12px sans-serif';
   [[24, 'Hố nhỏ: nhảy thường'], [34.5, 'Giếng: bám tường + nhảy (giữ hướng vào tường để leo)'], [50, 'Hố lớn: LƯỚT rồi NHẢY'], [62, 'Đấu trường: tập combo 3 nhát đao laze']]
@@ -564,6 +647,7 @@ function frame(now) {
   pollInput();
   while (acc >= STEP) {
     acc -= STEP; time += STEP; P.ox = P.x; P.oy = P.y;
+    updateFx(STEP);
     if (hitstop > 0) { hitstop -= STEP; continue; }
     updatePlayer(STEP); updateFoes(STEP); updateParts(STEP);
     pressed.jump = pressed.attack = pressed.dash = released.jump = false;

@@ -27,6 +27,7 @@ Engine: Unity, PC + điện thoại.
 
 - `prototype/dieu-khien/` — bản thử điều khiển Xích Long (HTML, vứt đi sau khi thử; không đưa code này vào game thật). Chỉnh cảm giác tay ở khối `T` đầu file.
   - Hoạt ảnh: mỗi dáng có điểm neo hông riêng (`FA`) nên đổi dáng không bị giật ngang; nhân vật vẽ nội suy giữa các bước vật lý (mượt trên màn 60/90/120Hz); có co giãn khi nhảy, đáp, lướt, quay đầu; nhún theo bước chạy; bóng mờ khi lướt; giữ dáng chém thêm một nhịp khi dứt combo.
+  - Chém kiểu Zero: vệt bán nguyệt (`drawSwing`/`crescent`, chỉnh `ARC_*`), trúng khi đao quét qua `HIT_AT`, khựng `HITSTOP` (nhát cuối x`FINISH_STOP`), vết cắt + vòng nổ + chớp màn hình nhát cuối, tiếng vút/tiếng trúng bằng WebAudio. Nhảy 2 bậc: `AIR_JUMPS`, `AIR_JUMP_VEL`.
   - Thêm khung mới: bỏ file vào `frames/`, ghi tên vào `ANIM` (hoặc `ATKF` cho nhát chém) và điểm neo hông vào `FA` (`FY` nếu cần dịch dọc).
   - Xích Long đã đủ bộ khung (Gemini, 2026-11-17): chạy 8, nhảy 5, lướt 3, chém nhát 1/2/3 = 5/5/6, bám + đạp tường 3, đứng thở 4, chém trên không 5. Tấm gốc ở `art/characters/xich_long/sheets/`.
 - `tools/cat_khung.py` — cắt tấm hình nhiều dáng nền xanh lá thành các khung 150×110, cùng tỉ lệ, ép về bảng màu chung.
