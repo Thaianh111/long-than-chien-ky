@@ -93,7 +93,7 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -417,7 +417,8 @@ function drawSwing() {
 // Điểm neo của từng dáng = vị trí HÔNG trong khung 150x110 (chân luôn chạm đáy khung).
 // Trước đây mọi dáng đều canh giữa khung nên đổi dáng là thân người nhảy ngang tới 30px -> giật.
 // w1 neo theo tay chạm tường (mép phải hitbox), không theo hông
-const FA = { id1: 72, id2: 69, id3: 70, id4: 69,
+const FA = { as1: 83, as2: 77, as3: 79, as4: 74, as5: 77,
+  id1: 72, id2: 69, id3: 70, id4: 69,
   w1: 83, w2: 76, w3: 76,
   s3_1: 81, s3_2: 86, s3_3: 77, s3_4: 74, s3_5: 75, s3_6: 78,
   s2_1: 72, s2_2: 75, s2_3: 77, s2_4: 83, s2_5: 85,
@@ -426,6 +427,8 @@ const FA = { id1: 72, id2: 69, id3: 70, id4: 69,
   jump1: 76, jump2: 80, jump3: 71, jump4: 74, jump5: 74,
   run1: 68, run2: 75, run3: 75, run4: 72, run5: 68, run6: 75, run7: 76, run8: 73,
   idle: 73, run: 57, jump: 98, dash: 88, windup: 74, slash_thrust: 75, slash_up: 80, x_overhead: 79 };
+// Dịch dọc riêng (px, dương = xuống) cho dáng lộn vòng trên không, để thân người giữ đúng độ cao
+const FY = { as1: 4, as2: -7, as3: -1, as4: -1 };
 // Tâm vệt chém (vai) so với chân, theo từng nhát
 const SWING_AT = { 0: { x: 6, y: -58 }, 1: { x: 4, y: -60 }, 2: { x: 2, y: -52 }, air: { x: 2, y: -58 } };
 // Thêm khung mới: bỏ file vào frames/ rồi ghi tên vào đây theo thứ tự (vd run: ['run1','run2',...]).
@@ -438,7 +441,7 @@ const ATKF = {
   0:   { pre: ['s1_1'], act: ['s1_2', 's1_3'], post: ['s1_4'], rec: 's1_5' },
   1:   { pre: ['s2_1'], act: ['s2_2', 's2_3'], post: ['s2_4'], rec: 's2_5' },
   2:   { pre: ['s3_1', 's3_2'], act: ['s3_3', 's3_4'], post: ['s3_5'], rec: 's3_6' },
-  air: { pre: ['slash_up'], act: ['x_overhead'], post: ['x_overhead'], rec: 'x_overhead' },
+  air: { pre: ['as1'], act: ['as2', 'as3'], post: ['as4', 'as5'], rec: 'as5' },
 };
 function atkFrame(endPose) {
   const a = P.atk; if (!a) return null;
@@ -474,7 +477,7 @@ function tinted(name) {
 }
 function drawPose(name, alpha) {
   const fr = FR[name];
-  if (fr && fr.complete && fr.naturalWidth) cx.drawImage(fr, -FA[name], -FH + 2);
+  if (fr && fr.complete && fr.naturalWidth) cx.drawImage(fr, -FA[name], -FH + 2 + (FY[name] || 0));
   else if (SPR.complete && SPR.naturalWidth) cx.drawImage(SPR, -SPR_W / 2, -SPR_H);
 }
 function drawPlayer(alpha) {
@@ -484,7 +487,7 @@ function drawPlayer(alpha) {
   for (const g of P.ghosts) {
     const t = tinted(g.n); if (!t) continue;
     cx.save(); cx.globalAlpha = g.a * 0.5; cx.translate(Math.round(g.x + P.w / 2 - cam.x), Math.round(g.y + P.h - cam.y)); cx.scale(g.f, 1);
-    cx.drawImage(t, -FA[g.n], -FH + 2); cx.restore();
+    cx.drawImage(t, -FA[g.n], -FH + 2 + (FY[g.n] || 0)); cx.restore();
   }
   cx.restore();
   const name = pickFrame();
