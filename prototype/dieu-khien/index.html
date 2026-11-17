@@ -149,21 +149,110 @@ const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
 /* ---------------- màn chơi (vẽ bằng khối ô) ---------------- */
-const TS = 32, MW = 110, MH = 17;
+const TS = 32, MW = 180, MH = 17;   // màn 1 Hồng Thủy: design/levels/hong-thuy-man1.md
 const map = Array.from({length: MH}, () => new Uint8Array(MW));
 const rect = (x, y, w, h, v = 1) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if (i >= 0 && j >= 0 && i < MW && j < MH) map[j][i] = v; };
-rect(0, 15, MW, 2);            // nền
-rect(0, 0, 1, MH);             // tường trái
-rect(MW - 1, 0, 1, MH);        // tường phải
-rect(10, 12, 4, 1); rect(16, 10, 3, 1);          // bậc thang
-rect(22, 15, 4, 2, 0);                           // hố nhỏ (nhảy thường)
-rect(34, 4, 1, 11); rect(38, 6, 1, 9);           // giếng nhảy tường
-rect(38, 6, 6, 1);                               // gờ trên giếng
-rect(44, 6, 1, 4);
-rect(52, 15, 7, 2, 0);                           // hố lớn: cần LƯỚT + NHẢY
-rect(64, 11, 5, 1); rect(72, 9, 5, 1); rect(80, 11, 5, 1);   // đấu trường
-rect(90, 8, 1, 7);                               // tường cuối để tập bám
-const checkpoints = [{ x: 3 * TS, y: 15 * TS }, { x: 46 * TS, y: 15 * TS }, { x: 61 * TS, y: 15 * TS }];
+
+/* ================= MÀN 1 — HỒNG THỦY ================= */
+
+/* ---- khung ---- */
+rect(0, 15, MW, 2);                               // nền toàn màn (hàng 15–16, mặt nền y = 480px)
+rect(0, 0, 1, MH);                                // tường trái
+rect(MW - 1, 0, 1, MH);                           // tường phải (cũng là tường phải đấu trường)
+
+/* ---- ĐOẠN 1: PHỐ NGẬP (x 1–34) ---- */
+rect(8, 13, 3, 2);                                // xe hơi chìm: cao 2 ô, nhảy thường qua
+rect(14, 15, 5, 1, 0);                            // vũng nước nông x14–18 (khoét 1 ô, hàng 16 vẫn là đáy)
+rect(28, 13, 4, 2);                               // trạm xe buýt đổ: bệ cao 2 ô, có tháp súng trên nóc
+
+/* ---- ĐOẠN 2: QUẢNG TRƯỜNG THÀNH HỒ (x 35–83) ---- */
+rect(35, 13, 3, 2);                               // bậc lên quảng trường (mặt y = 416)
+rect(38, 11, 8, 4);                               // bệ cột A x38–45 (mặt y = 352)
+                                                  // hố nước 1: x46–49 (4 ô) — nhảy thường
+rect(50, 11, 6, 4);                               // bệ cột B x50–55 (tháp súng)
+                                                  // hố nước 2: x56–61 (6 ô) — lướt+nhảy hoặc nhảy đôi
+rect(58, 13, 2, 2);                               //   bậc thoát dưới nước trong hố 2 (mặt y = 416)
+rect(62, 11, 6, 4);                               // bệ cột C x62–67
+                                                  // hố nước 3: x68–75 (8 ô) — PHẢI đi qua biển hiệu nổi
+rect(70, 8, 4, 1);                                //   biển hiệu nổi x70–73 (mặt y = 256)
+rect(72, 13, 2, 2);                               //   bậc thoát dưới nước trong hố 3
+rect(76, 11, 5, 4);                               // bệ cột D x76–80 (tháp súng)
+rect(81, 13, 3, 2);                               // bậc xuống phố x81–83
+
+/* ---- ĐOẠN 3: GIẾNG NƯỚC DÂNG (x 84–93) ---- */
+                                                  // phố khô x84–87 (điểm lưu 3)
+rect(88, 2, 1, 10);                               // tường trái tháp x88, hàng 2–11; cửa vào hàng 12–14 (cao 3 ô)
+                                                  // lòng giếng x89–93 = rộng 5 ô; tường phải = mặt trái mái A (x94)
+rect(92, 11, 2, 1);                               // gờ 1 bám tường phải (mặt y = 352)
+rect(89, 8, 2, 1);                                // gờ 2 bám tường trái (mặt y = 256)
+rect(92, 6, 2, 1);                                // gờ 3 bám tường phải (mặt y = 192)
+// Khi nước dâng kích hoạt: rect(88, 12, 1, 3) — cửa sập đóng sau lưng (xem WATER.rise.lockTiles)
+
+/* ---- ĐOẠN 4: MÁI NHÀ (x 94–143) ---- */
+rect(94, 4, 8, 11);                               // nhà A x94–101, mái y = 128 (lối ra của giếng)
+                                                  // khe 1: x102–104 (3 ô), mái B thấp hơn 2 ô
+rect(105, 6, 7, 9);                               // nhà B x105–111, mái y = 192 (tháp súng)
+                                                  // khe 2: x112–117 (6 ô), cùng độ cao — lướt+nhảy
+rect(114, 11, 2, 1);                              //   gờ ban công thoát nước trong khe 2 (mặt y = 352)
+rect(118, 6, 6, 9);                               // nhà C x118–123, mái y = 192 (điểm lưu 4)
+                                                  // khe 3: x124–126 (3 ô), xuống 2 ô
+rect(127, 8, 8, 7);                               // nhà D x127–134, mái y = 256
+                                                  // khe 4: x135–138 (4 ô), LÊN 3 ô — nhảy đôi hoặc bám tường E
+rect(139, 5, 5, 10);                              // nhà E x139–143, mái y = 160 (tháp súng), mặt trái leo tường được
+
+/* ---- ĐOẠN 5: CỔNG THỦY TINH (x 144–178) ---- */
+                                                  // hành lang khô x144–157 (rơi từ mái E xuống, điểm lưu 5)
+rect(158, 1, 1, 11);                              // tường trái đấu trường x158, hàng 1–11 (cao 11 ô, đạp tường được)
+                                                  // cổng mở ở hàng 12–14; đóng lại = rect(158, 12, 1, 3)
+rect(158, 0, MW - 158, 1);                        // trần đấu trường hàng 0 (không trèo qua được)
+                                                  // sàn đấu trường x159–178 phẳng (nền chung hàng 15)
+
+/* ---- ĐIỂM LƯU (y = mặt đất chỗ đứng) ---- */
+const checkpoints = [
+  { x:   3 * TS, y: 15 * TS },                    // 1 đầu màn
+  { x:  51 * TS, y: 11 * TS },                    // 2 bệ cột B (giữa quảng trường)
+  { x:  85 * TS, y: 15 * TS },                    // 3 trước giếng nước dâng
+  { x: 119 * TS, y:  6 * TS },                    // 4 mái nhà C
+  { x: 148 * TS, y: 15 * TS },                    // 5 trước cổng boss
+];
+
+/* ---- NƯỚC ---- */
+// Quy tắc: thân người chơi chạm vùng nước (x0 <= x < x1, y > mặt nước)
+//   - chân dưới mặt nước  -> tốc độ chạy/lướt x0.5 (nhảy giữ nguyên để không bị kẹt)
+//   - nửa thân dưới mặt nước và deep !== false -> mất 1/8 máu tối đa mỗi giây (tích theo dt)
+//   - KHÔNG chết ngay; hết máu thì chết bình thường, hồi sinh ở điểm lưu
+const WATER = {
+  zones: [
+    { x0:  14 * TS, x1:  19 * TS, y: 15 * TS + 8, deep: false }, // vũng nông phố ngập: chỉ chậm
+    { x0:  46 * TS, x1:  50 * TS, y: 12 * TS },  // hố nước 1 quảng trường (y = 384)
+    { x0:  56 * TS, x1:  62 * TS, y: 12 * TS },  // hố nước 2
+    { x0:  68 * TS, x1:  76 * TS, y: 12 * TS },  // hố nước 3 (dưới biển hiệu nổi)
+    { x0: 102 * TS, x1: 105 * TS, y: 12 * TS },  // khe mái 1
+    { x0: 112 * TS, x1: 118 * TS, y: 12 * TS },  // khe mái 2
+    { x0: 124 * TS, x1: 127 * TS, y: 12 * TS },  // khe mái 3
+    { x0: 135 * TS, x1: 139 * TS, y: 12 * TS },  // khe mái 4
+  ],
+  rise: {
+    triggerX: 90 * TS,        // 2880px: người chơi đã vào hẳn lòng giếng
+    x0: 88 * TS,              // 2816px (gồm cả cột cửa vào)
+    x1: 94 * TS,              // 3008px (đến mặt tường nhà A)
+    startY: 16 * TS,          // 512px: dưới mặt nền 1 ô, nước trào lên từ cống
+    endY: 5 * TS,             // 160px: dừng dưới mái A 1 ô, mái luôn an toàn
+    speed: 48,                // px/s
+    delay: 1.0,               // giây báo động (còi + rung màn) trước khi nước bắt đầu dâng
+    lockTiles: { x: 88, y: 12, w: 1, h: 3 },     // cửa sập đóng sau lưng lúc kích hoạt
+    // Chết / hồi sinh ở điểm lưu 3: đặt lại mặt nước = startY, mở lại lockTiles (rect(..., 0)), cho kích hoạt lại.
+  },
+};
+
+/* ---- ĐẤU TRƯỜNG BOSS ---- */
+const BOSS_ARENA = {
+  x0: 159 * TS,               // 5088px: mép trong tường trái
+  x1: 179 * TS,               // 5728px: mép trong tường phải (rộng 20 ô)
+  gateX: 158 * TS,            // 5056px: cột cổng
+  closeAtX: 161 * TS,         // người chơi vượt qua đây thì cổng đóng: rect(158, 12, 1, 3)
+  floorY: 15 * TS,            // sàn phẳng y = 480; tường cao 14 ô (hàng 1–14) để đạp tường
+};
 const solidAt = (px, py) => { const i = Math.floor(px / TS), j = Math.floor(py / TS); return i >= 0 && i < MW && j >= 0 && j < MH && map[j][i] === 1; };
 
 /* ---------------- nhập liệu ---------------- */
@@ -213,7 +302,8 @@ function resetPlayer(cp) {
     hp: T.HP, inv: 0, ox: cp.x, oy: cp.y - P.h, sqx: 1, sqy: 1, vsx: 0, vsy: 0, gait: 0, ghostT: 0, recover: 0, recFrame: null, turnT: 0, lastFace: 1, airT: 0 });
 }
 let cpIndex = 0; resetPlayer(checkpoints[0]);
-function respawn() { resetPlayer(checkpoints[cpIndex]); warpIn(); }
+function respawn() { resetPlayer(checkpoints[cpIndex]); warpIn();
+  if (typeof bossReset === 'function') { if (B.st !== 'wait' && B.st !== 'dead') bossReset(); lvWaterRise = null; const L = WATER.rise.lockTiles; rect(L.x, L.y, L.w, L.h, 0); } }
 
 function collideX(o) {
   const top = o.y + 1, bot = o.y + o.h - 1;
@@ -420,8 +510,17 @@ const addFoe = (type, tx, ty) => { const w = type === 'drone' ? 34 : 36, h = typ
   foes.push({ type, ox: tx * TS, oy: ty * TS + TS - h, x: tx * TS, y: ty * TS + TS - h, w, h,
   hp: type === 'drone' ? 3 : 5, maxHp: type === 'drone' ? 3 : 5, vx: 0, vy: 0, flash: 0, dead: 0, t: Math.random() * 6, dir: -1, cd: 1 + Math.random() }); };
 // quái tạm: drone bay + tháp súng (sprite Warped City của Ansimuz, CC0, đổi màu tím Ma Chủng)
-addFoe('drone', 13, 9); addFoe('turret', 28, 14); addFoe('drone', 47, 4); addFoe('turret', 66, 14); addFoe('drone', 74, 7);
-addFoe('turret', 82, 14); addFoe('drone', 86, 10); addFoe('turret', 96, 14);
+/* ---- QUÁI ---- */
+addFoe('drone',  24,  9);                         // drone đầu tiên, trên phố trống — dạy chém trên không
+addFoe('turret', 30, 12);                         // trên nóc trạm xe buýt (mặt hàng 13)
+addFoe('turret', 54, 10);                         // bệ B, bắn ngang qua hố 1 về phía bệ A
+addFoe('drone',  60,  6);                         // trên hố 2 — quấy khi người chơi lấy đà lướt
+addFoe('turret', 79, 10);                         // bệ D, bắn về phía biển hiệu nổi
+addFoe('drone', 100,  1);                         // chào người chơi khi vừa thoát giếng lên mái A
+addFoe('turret',110,  5);                         // mái B, bắn ngang mái
+addFoe('drone', 130,  4);                         // trên mái D
+addFoe('turret',142,  4);                         // mái E, bắn qua khe 4 khi người chơi leo lên
+
 const eshots = [];
 function hurtPlayer(dmg, fromX) {
   if (P.warp || P.inv > 0) return;
@@ -880,8 +979,6 @@ function draw() {
     cx.fillStyle = '#262a3a'; cx.fillRect(X, Y + TS - 2, TS, 2); cx.fillRect(X + TS - 2, Y, 2, TS);
     if (j === 0 || map[j - 1][i] !== 1) { cx.fillStyle = '#C9A227'; cx.fillRect(X, Y, TS, 2); }
   }
-  cx.fillStyle = 'rgba(60,110,150,.55)';
-  for (let X = 0; X < VW; X += 4) { const wy = MH * TS - 20 - oy + Math.sin((X + ox) * 0.03 + time * 3) * 3; cx.fillRect(X, wy, 4, VH); }
   checkpoints.forEach((c, i) => { const X = c.x - ox, Y = c.y - oy; cx.fillStyle = '#888'; cx.fillRect(X, Y - 52, 3, 52); cx.fillStyle = i <= cpIndex ? '#d8352a' : '#555'; cx.fillRect(X + 3, Y - 52, 22, 14); });
   for (const f of foes) {
     if (f.dead > 0) continue;
@@ -897,9 +994,10 @@ function draw() {
     cx.fillStyle = '#000'; cx.fillRect(X, Y - 9, f.w, 4); cx.fillStyle = '#ffcf5a'; cx.fillRect(X, Y - 9, f.w * f.hp / f.maxHp, 4);
   }
   for (const b of eshots) { const im = FR['fx_shot' + (1 + Math.floor(b.t * 12) % 3)]; if (im && im.width) { cx.save(); cx.translate(Math.round(b.x - ox), Math.round(b.y - oy)); cx.scale(-Math.sign(b.vx) || 1, 1); cx.drawImage(im, -15, -11); cx.restore(); } }
+  drawBoss(ox, oy);
   if (!(P.inv > 0 && Math.floor(P.inv * 20) % 2)) drawPlayer(renderAlpha);
   for (const p of parts) { cx.globalAlpha = Math.min(1, p.life * 3); cx.fillStyle = p.c; cx.fillRect(Math.round(p.x - ox), Math.round(p.y - oy), 3, 3); }
-  cx.globalAlpha = 1; drawBolts(ox, oy);
+  cx.globalAlpha = 1; drawBolts(ox, oy); drawWater(ox, oy);
   for (const e of fx) {
     const k = e.life / e.max; cx.save(); cx.translate(Math.round(e.x - ox), Math.round(e.y - oy));
     if (e.k === 'cut') {       // vết cắt: đường sáng mảnh kéo dài rồi thu lại
@@ -921,10 +1019,333 @@ function draw() {
   if (flashT > 0) { cx.globalAlpha = flashT / 0.06 * 0.35; cx.fillStyle = '#fff1d6'; cx.fillRect(0, 0, VW, VH); cx.globalAlpha = 1; }
   cx.globalAlpha = 1;
   cx.fillStyle = 'rgba(243,230,196,.75)'; cx.font = '12px sans-serif';
-  [[24, 'Hố nhỏ: nhảy thường'], [34.5, 'Giếng: bám tường + nhảy (giữ hướng vào tường để leo)'], [50, 'Hố lớn: LƯỚT rồi NHẢY'], [62, 'Đấu trường: tập combo 3 nhát đao laze']]
-    .forEach(([tx, s]) => cx.fillText(s, tx * TS - ox - 60, 2.5 * TS - oy));
+  drawBossHud(); drawTalk();
+  if (B.st === 'dead' && B.t > 2.4) { cx.fillStyle = 'rgba(0,0,0,.5)'; cx.fillRect(0, VH / 2 - 34, VW, 60); cx.fillStyle = '#ffd34d'; cx.font = 'bold 22px sans-serif'; cx.textAlign = 'center'; cx.fillText('HẠ THỦY TINH — QUA MÀN 1', VW / 2, VH / 2); cx.font = '13px sans-serif'; cx.fillStyle = '#f3e6c4'; cx.fillText('Nhận được vũ khí Thủy Tiễn (sắp có)', VW / 2, VH / 2 + 18); cx.textAlign = 'left'; }
   cx.restore();
 }
+
+/* ================= TRÙM THỦY TINH + NƯỚC (màn 1 Hồng Thủy) =================
+   Thiết kế: design/gdd/boss-thuy-tinh.md. Mọi số chỉnh được nằm ở khối BT. */
+const BT = {
+  HP: 32, P2: 16, TOUCH: 3, INV: 0.2, WALK: [90, 120], IDLE: [0.8, 0.5],
+  WAVE: { W: 0.6, R: 0.7, SPD: 280, H: 48, H2: 112, DMG: 3, GAP2: 0.45 },
+  DASH: { W: [0.5, 0.4], SPD: [560, 640], R: 1.1, DMG: 4 },
+  BUB: { W: 0.45, N: [3, 4], GAP: [0.25, 0.2], VX: [160, 220, 280, 250], VY: 380, G: 900, R: 0.6, DMG: 2, REFL: 2, SIZE: 12 },
+  SHIELD: { W: 0.4, HOLD: [3.0, 2.5], DROP: [1.0, 0.8], STUN: 1.5, DMG: 2 },
+  SPEAR: { W: [0.8, 0.7], N: [6, 8], SPD: 480, DMG: 2, R: 0.6 },
+  FLOOD: { W: 1.0, UP: 0.6, HOLD: 1.8, DOWN: 0.6, PEAK: 176, TICK: 0.5, DMG: 2, CD: 12, R: 0.8 },
+  WATER_P2: 64, SHIFT: 2.5,
+  WEIGHT: [{ wave: 3, dash: 3, bubbles: 3, shield: 2, spears: 2, flood: 0 }, { wave: 3, dash: 3, bubbles: 3, shield: 2, spears: 3, flood: 0 }],
+  LINE_IN: ['Thủy dâng vạn trượng — ấy là lẽ trời.', 'Phàm nhân, ngươi lấy gì giữ sơn hà?'],
+  LINE_OUT: ['Nước… rồi cũng phải rút…', 'Giữ lấy sơn hà, hậu duệ Long Quân.'],
+};
+const B = { st: 'wait' };
+const bproj = [];
+let arenaWater = 0, arenaHaz = 0, lvWaterRise = null, talk = null;
+
+function bossFloor() { return 15 * TS; }
+function bossReset() {
+  Object.assign(B, { st: 'wait', x: BOSS_ARENA.x1 - 120, y: bossFloor(), w: 56, h: 112, hp: BT.HP, face: -1, inv: 0, t: 0, phase: 0,
+    last: [], floodCd: 0, lostSince: 0, flash: 0, vy: 0, fly: 0, anim: 'idle', stun: 0 });
+  bproj.length = 0; arenaWater = 0; arenaHaz = 0; talk = null;
+  if (B.gateShut) { rect(158, 12, 1, 3, 0); B.gateShut = false; }
+}
+function say(lines, dur) { talk = { lines, t: 0, dur }; }
+function hurtBoss(d, src) {
+  if (B.st === 'intro' || B.st === 'shift' || B.st === 'dead' || B.st === 'wait' || B.inv > 0) return false;
+  B.hp = Math.max(0, B.hp - d); B.inv = BT.INV; B.flash = 0.1; B.lostSince += d;
+  sparks(B.x, B.y - 70, 10, '#8ff0ff'); sfxHit(d > 1); hits++;
+  if (B.hp <= 0) {
+    B.st = 'dead'; B.t = 0; bproj.length = 0; say(BT.LINE_OUT, 4); kills++;
+  } else if (B.phase === 0 && B.hp <= BT.P2 && B.st !== 'atk') startShift();
+  return true;
+}
+function startShift() { B.st = 'shift'; B.t = 0; B.phase = 1; bproj.length = 0; B.anim = 'roar'; shake = 10; flashT = 0.06; B.flashCol = '#b57cff'; }
+function bpPush(o) { bproj.push(Object.assign({ t: 0, life: 6, dmg: 2, vx: 0, vy: 0, r: 8 }, o)); }
+
+function chooseMove() {
+  const w = Object.assign({}, BT.WEIGHT[B.phase]), d = Math.abs(B.x - (P.x + P.w / 2));
+  if (!B.first) { B.first = 1; return 'wave'; }
+  if (d < 120) { w.wave += 2; w.bubbles -= 1; }
+  if (d > 300) w.dash += 3;
+  if (P.wall) { w.spears += 2; w.dash -= 2; }
+  if (B.phase === 1 && B.floodCd <= 0 && B.lostSince >= 6) w.flood += 6;
+  if (B.last[0] && B.last[0] === B.last[1]) w[B.last[0]] = 0;
+  if (B.last[0] === 'shield') w.shield = 0;
+  let sum = 0; for (const k in w) { w[k] = Math.max(0, w[k]); sum += w[k]; }
+  let r = Math.random() * sum; for (const k in w) { r -= w[k]; if (r <= 0) { B.last.unshift(k); B.last.length = 2; return k; } }
+  return 'wave';
+}
+function startMove(m) {
+  B.st = 'atk'; B.move = m; B.t = 0; B.stage = 'W'; B.face = P.x + P.w / 2 < B.x ? -1 : 1; B.n = 0; B.anim = 'cast';
+  if (m === 'spears') {
+    const n = BT.SPEAR.N[B.phase], L = BOSS_ARENA.x0 + 16, Rr = BOSS_ARENA.x1 - 16, gap = (Rr - L) / (n + 1);
+    const skip = new Set(); while (skip.size < 2) skip.add(1 + Math.floor(Math.random() * n));   // luôn chừa 2 khe
+    B.spots = []; for (let i = 1; i <= n + 1; i++) if (!skip.has(i)) B.spots.push(L + gap * (i - 0.5) + (Math.random() - 0.5) * 24);
+  }
+  if (m === 'flood') { B.anim = 'cast'; B.fly = 0; }
+  if (m === 'dash') B.anim = 'thrust';
+}
+function stageTime(m) {
+  const p = B.phase;
+  return {
+    wave: { W: BT.WAVE.W, A: p ? BT.WAVE.GAP2 + 0.05 : 0.05, R: BT.WAVE.R },
+    dash: { W: BT.DASH.W[p], A: 9, R: BT.DASH.R },
+    bubbles: { W: BT.BUB.W, A: BT.BUB.N[p] * BT.BUB.GAP[p], R: BT.BUB.R },
+    shield: { W: BT.SHIELD.W, A: BT.SHIELD.HOLD[p], R: 0.5 },
+    spears: { W: BT.SPEAR.W[p], A: 0.5, R: BT.SPEAR.R },
+    flood: { W: BT.FLOOD.W, A: BT.FLOOD.UP + BT.FLOOD.HOLD + BT.FLOOD.DOWN, R: BT.FLOOD.R },
+  }[m];
+}
+function updateBoss(dt) {
+  if (typeof BOSS_ARENA === 'undefined') return;
+  const pcx = P.x + P.w / 2, A = BOSS_ARENA, fl = bossFloor();
+  if (talk) { talk.t += dt; if (talk.t > talk.dur) talk = null; }
+  // nước đuổi trong màn (giếng nước dâng)
+  if (typeof WATER !== 'undefined' && WATER.rise) {
+    const R = WATER.rise;
+    if (!lvWaterRise && pcx > R.triggerX && pcx < R.x1 && B.st === 'wait') {
+      lvWaterRise = { y: R.startY, t: 0 }; const L = R.lockTiles; rect(L.x, L.y, L.w, L.h, 1); shake = 8; sfxLand(); say(['Cửa sập! Nước đang dâng — leo lên mau!'], 2.2); talk.who = 'Ngọc Diệp';
+    }
+    if (lvWaterRise) { lvWaterRise.t += dt; if (lvWaterRise.t > R.delay) lvWaterRise.y = Math.max(R.endY, lvWaterRise.y - R.speed * dt); }
+  }
+  if (B.st === 'wait') {
+    if (pcx > A.closeAtX && !P.warp) {
+      B.st = 'intro'; B.t = 0; say(BT.LINE_IN, 2.6);
+      rect(158, 12, 1, 3, 1); B.gateShut = true; shake = 6; sfxLand();
+    }
+    return;
+  }
+  B.t += dt; B.inv = Math.max(0, B.inv - dt); B.flash = Math.max(0, B.flash - dt); B.floodCd -= dt;
+  if (B.st === 'intro') { if (B.t > 2.8) { B.st = 'idle'; B.t = 0; } }
+  else if (B.st === 'shift') {
+    arenaWater = Math.min(BT.WATER_P2, Math.max(arenaWater, (B.t - 0.8) / 1.5 * BT.WATER_P2));
+    if (B.t > BT.SHIFT) { B.st = 'idle'; B.t = 0; B.anim = 'idle'; }
+  } else if (B.st === 'idle') {
+    B.anim = 'idle'; const d = pcx - B.x, want = Math.abs(d) < 160 ? -Math.sign(d) : Math.abs(d) > 260 ? Math.sign(d) : 0;
+    B.face = d < 0 ? -1 : 1;
+    B.x = Math.max(A.x0 + 40, Math.min(A.x1 - 40, B.x + want * BT.WALK[B.phase] * dt));
+    if (B.t > BT.IDLE[B.phase]) startMove(chooseMove());
+  } else if (B.st === 'stun') {
+    B.anim = 'hurt'; B.y = Math.min(fl, B.y + 600 * dt); if (B.t > B.stun) { B.st = 'idle'; B.t = 0; B.fly = 0; }
+  } else if (B.st === 'atk') atkStep(dt, pcx, A, fl);
+  else if (B.st === 'dead') {
+    arenaWater = Math.max(0, arenaWater - 40 * dt); arenaHaz = 0;
+    if (Math.random() < 0.3 && B.t < 2) { const ex = B.x + (Math.random() - 0.5) * 60, ey = B.y - Math.random() * 110; fx.push({ k: 'boom', x: ex, y: ey, life: 0.42, max: 0.42 }); shake = 4; }
+  }
+  // va chạm thân
+  if (B.st !== 'dead' && B.st !== 'intro' && Math.abs(pcx - B.x) < B.w / 2 + P.w / 2 - 4 && P.y + P.h > B.y - B.h && P.y < B.y) hurtPlayer(BT.TOUCH, B.x);
+  // trúng kiếm
+  const box = typeof slashBox === 'function' ? slashBox() : null;
+  if (box && !P.hitSet.has(B) && box.x < B.x + B.w / 2 && box.x + box.w > B.x - B.w / 2 && box.y < B.y && box.y + box.h > B.y - B.h) {
+    P.hitSet.add(B);
+    if (B.move === 'shield' && B.st === 'atk' && B.stage === 'A' && Math.sign(pcx - B.x) === B.face) { sparks(B.x + B.face * 40, B.y - 70, 8, '#8ff0ff'); }
+    else if (hurtBoss(P.atk.dmg)) { hitstop = T.HITSTOP * (P.atk.dmg > 1 ? T.FINISH_STOP : 1); shake = T.SHAKE; fx.push({ k: 'ring', x: B.x, y: B.y - 60, life: 0.16, max: 0.16, big: P.atk.dmg > 1 }); }
+  }
+  // trúng tên nỏ
+  for (const b of bolts) {
+    if (b.life <= 0 || b.hit.has(B)) continue;
+    const shielded = B.st === 'atk' && B.move === 'shield' && B.stage === 'A';
+    const sx = B.x + B.face * 40;
+    if (shielded && Math.sign(b.x - B.x) === B.face && Math.abs(b.x - sx) < 16 && b.y > B.y - 140 && b.y < B.y) {
+      b.hit.add(B);
+      if (b.lv === 2) { hurtBoss(4); B.st = 'stun'; B.t = 0; B.stun = BT.SHIELD.STUN; sparks(sx, b.y, 30, '#8ff0ff'); shake = 10; flashT = 0.05; }
+      else { b.life = 0; sparks(sx, b.y, 8, '#8ff0ff'); }
+      continue;
+    }
+    if (Math.abs(b.x - B.x) < B.w / 2 && b.y > B.y - B.h && b.y < B.y) {
+      b.hit.add(B);
+      if (hurtBoss(T.TV.DMG[b.lv])) { hitstop = Math.max(hitstop, T.TV.STOP[b.lv]); if (B.move === 'flood' && b.lv === 2 && B.fly) { B.st = 'stun'; B.t = 0; B.stun = 1.0; } }
+      if (b.lv < 2) b.life = 0;
+    }
+  }
+  updateBproj(dt, box, fl, A);
+  // nước trong đấu trường: nước tím gây sát thương
+  if (arenaHaz > arenaWater + 2 && P.y + P.h > fl - arenaHaz && pcx > A.x0 && pcx < A.x1) {
+    P.hazT = (P.hazT || 0) - dt; if (P.hazT <= 0) { P.hazT = BT.FLOOD.TICK; if (P.inv <= 0) { P.hp -= BT.FLOOD.DMG; sparks(pcx, P.y + P.h / 2, 8, '#b57cff'); sfxHit(false); if (P.hp <= 0) respawn(); } }
+  }
+}
+function atkStep(dt, pcx, A, fl) {
+  const S = stageTime(B.move), m = B.move, p = B.phase;
+  if (B.stage === 'W' && B.t >= S.W) { B.stage = 'A'; B.t = 0; B.n = 0; onActive(m, pcx, fl); }
+  else if (B.stage === 'A') {
+    if (m === 'wave' && p && B.n === 1 && B.t > BT.WAVE.GAP2) { B.n = 2; spawnWave(fl); }
+    if (m === 'dash') {
+      B.x += B.face * BT.DASH.SPD[p] * dt;
+      if (B.x < A.x0 + 34 || B.x > A.x1 - 34) { B.x = Math.max(A.x0 + 34, Math.min(A.x1 - 34, B.x)); B.stage = 'R'; B.t = 0; shake = 8; sfxLand(); sparks(B.x + B.face * 40, fl - 40, 14, '#e8f6f8'); B.anim = 'stuck'; }
+      if (Math.abs(pcx - B.x) < 60 && P.y + P.h > fl - 60 && P.y < fl - 20) hurtPlayer(BT.DASH.DMG, B.x);
+    }
+    if (m === 'bubbles' && B.n < BT.BUB.N[p] && B.t >= B.n * BT.BUB.GAP[p]) {
+      const vx = BT.BUB.VX[B.n] * Math.sign(pcx - B.x || B.face);
+      bpPush({ k: 'bub', x: B.x + B.face * 30, y: B.y - 80, vx, vy: -BT.BUB.VY, r: BT.BUB.SIZE, dmg: BT.BUB.DMG, refl: 1 }); B.n++; sfxShoot(0);
+    }
+    if (m === 'shield' && B.t >= (B.n + 1) * BT.SHIELD.DROP[p] && B.t < S.A) {
+      B.n++; bpPush({ k: 'drop', x: B.x + B.face * 20, y: fl - 76, vx: B.face * 300, vy: 0, r: 6, dmg: BT.SHIELD.DMG });
+    }
+    if (m === 'flood') {
+      const t = B.t, F = BT.FLOOD, base = BT.WATER_P2;
+      B.fly = 1; B.y += ((fl - 150) - B.y) * Math.min(1, dt * 4);
+      arenaHaz = t < F.UP ? base + (F.PEAK - base) * t / F.UP : t < F.UP + F.HOLD ? F.PEAK : Math.max(base, F.PEAK - (F.PEAK - base) * (t - F.UP - F.HOLD) / F.DOWN);
+    }
+    if (B.stage === 'A' && B.t >= S.A) {
+      if (m === 'shield') for (let i = 0; i < 8; i++) { const a = i / 8 * 6.283; bpPush({ k: 'drop', x: B.x + B.face * 40, y: fl - 70, vx: Math.cos(a) * 240, vy: Math.sin(a) * 240, r: 6, dmg: 2 }); }
+      if (m === 'flood') { arenaHaz = 0; B.floodCd = BT.FLOOD.CD; B.lostSince = 0; }
+      B.stage = 'R'; B.t = 0; B.anim = m === 'dash' ? 'stuck' : 'idle';
+    }
+  } else if (B.stage === 'R') {
+    if (m === 'flood') B.y = Math.min(fl, B.y + 500 * dt);
+    if (B.t >= S.R) {
+      B.y = fl; B.fly = 0; B.st = 'idle'; B.t = 0; B.anim = 'idle';
+      if (B.phase === 0 && B.hp <= BT.P2) startShift();
+    }
+  }
+}
+function spawnWave(fl) { bpPush({ k: 'wave', x: B.x + B.face * 40, y: fl, vx: B.face * BT.WAVE.SPD, w: 32, h: B.phase ? BT.WAVE.H2 : BT.WAVE.H, dmg: BT.WAVE.DMG }); shake = 5; sfxLand(); }
+function onActive(m, pcx, fl) {
+  if (m === 'wave') { spawnWave(fl); B.n = 1; B.anim = 'slam'; }
+  if (m === 'spears') for (const x of B.spots) bpPush({ k: 'spear', x, y: fl - 360, vx: 0, vy: BT.SPEAR.SPD, w: 16, h: 48, dmg: BT.SPEAR.DMG });
+  if (m === 'shield') B.anim = 'guard';
+}
+function updateBproj(dt, box, fl, A) {
+  const pcx = P.x + P.w / 2;
+  for (const b of bproj) {
+    b.t += dt; b.life -= dt;
+    if (b.k === 'bub' && !b.back) b.vy += BT.BUB.G * dt;
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.k === 'wave') { if (b.x < A.x0 || b.x > A.x1) b.life = 0;
+      if (Math.abs(pcx - b.x) < 16 + P.w / 2 && P.y + P.h > b.y - b.h) hurtPlayer(b.dmg, b.x - b.vx); continue; }
+    if (b.k === 'spear') { if (b.y >= fl) { b.y = fl; b.vy = 0; if (!b.stuck) { b.stuck = 1; b.life = 0.3; sparks(b.x, fl - 4, 6, '#8ff0ff'); } }
+      if (!b.stuck && Math.abs(pcx - b.x) < 8 + P.w / 2 && b.y > P.y && b.y - b.h < P.y + P.h) hurtPlayer(b.dmg, b.x); continue; }
+    if (b.back) {   // bong bóng bị chém bay ngược về lõi
+      const dx = B.x - b.x, dy = (B.y - 76) - b.y, L = Math.hypot(dx, dy) || 1; b.vx = dx / L * 420; b.vy = dy / L * 420;
+      if (L < 30) { b.life = 0; if (B.st !== 'shift') { B.inv = 0; hurtBoss(BT.BUB.REFL); } fx.push({ k: 'ring', x: b.x, y: b.y, life: 0.18, max: 0.18, big: 1, col: '#ff6a5a' }); }
+      continue;
+    }
+    if (solidAt(b.x, b.y) || b.y > fl - 2 && b.k !== 'wave') { b.life = 0; fx.push({ k: 'shothit', x: b.x, y: b.y, life: 0.15, max: 0.15 }); continue; }
+    if (b.refl && box && b.x > box.x && b.x < box.x + box.w && b.y > box.y && b.y < box.y + box.h) { b.back = 1; b.life = 3; sparks(b.x, b.y, 10, '#ffd34d'); hitstop = 0.05; continue; }
+    if (Math.abs(b.x - pcx) < b.r + P.w / 2 && b.y > P.y + 6 && b.y < P.y + P.h) { b.life = 0; hurtPlayer(b.dmg, b.x - b.vx); }
+  }
+  for (let i = bproj.length - 1; i >= 0; i--) if (bproj[i].life <= 0) bproj.splice(i, 1);
+}
+/* nước: mặt nước (y thế giới) tại x; Infinity = không có nước */
+function waterY(x) {
+  let y = Infinity;
+  if (typeof WATER !== 'undefined') {
+    for (const z of WATER.zones || []) if (x >= z.x0 && x <= z.x1) y = Math.min(y, z.y);
+    if (lvWaterRise && WATER.rise && x >= WATER.rise.x0 && x <= WATER.rise.x1) y = Math.min(y, lvWaterRise.y);
+  }
+  if (typeof BOSS_ARENA !== 'undefined' && x >= BOSS_ARENA.x0 && x <= BOSS_ARENA.x1) { const h = Math.max(arenaWater, arenaHaz); if (h > 0) y = Math.min(y, bossFloor() - h); }
+  return y;
+}
+function playerInWater() { return P.y + P.h * 0.6 > waterY(P.x + P.w / 2); }
+/* nước làm chậm + nước sâu ngoài màn rút máu (không chết ngay) */
+const WATER_K = { RUN: 0.6, GRAV: 0.7, FALL: 0.6, DRAIN: 2 };
+function deepAt(x) {
+  for (const z of WATER.zones) if (x >= z.x0 && x <= z.x1) return z.deep !== false;
+  return !!(lvWaterRise && x >= WATER.rise.x0 && x <= WATER.rise.x1);
+}
+function updatePlayerW(dt) {
+  const wet = !P.warp && playerInWater(), keep = [T.RUN_SPEED, T.GRAVITY, T.MAX_FALL, T.DASH_SPEED];
+  if (wet) { T.RUN_SPEED *= WATER_K.RUN; T.DASH_SPEED *= WATER_K.RUN; T.GRAVITY *= WATER_K.GRAV; T.MAX_FALL *= WATER_K.FALL;
+    if (!P.wasWet && P.vy > 100) { const x = P.x + P.w / 2, y = waterY(x); for (let i = 0; i < 14; i++) parts.push({ x, y, vx: (Math.random() - 0.5) * 300, vy: -150 - Math.random() * 250, life: 0.4, c: '#bdefff' }); } }
+  P.wasWet = wet;
+  updatePlayer(dt);
+  [T.RUN_SPEED, T.GRAVITY, T.MAX_FALL, T.DASH_SPEED] = keep;
+  const x = P.x + P.w / 2;
+  if (wet && deepAt(x) && P.y + P.h / 2 > waterY(x)) {
+    P.drain = (P.drain || 0) + WATER_K.DRAIN * dt;
+    if (P.drain >= 1) { P.drain -= 1; P.hp -= 1; sparks(x, P.y + 10, 4, '#bdefff'); if (P.hp <= 0) respawn(); }
+  }
+}
+
+/* ---------- vẽ ---------- */
+function drawWater(ox, oy) {
+  const segs = [];
+  if (typeof WATER !== 'undefined') {
+    for (const z of WATER.zones || []) segs.push([z.x0, z.x1, z.y, 0]);
+    if (lvWaterRise) segs.push([WATER.rise.x0, WATER.rise.x1, lvWaterRise.y, 0]);
+  }
+  if (typeof BOSS_ARENA !== 'undefined') {
+    if (arenaWater > 0) segs.push([BOSS_ARENA.x0, BOSS_ARENA.x1, bossFloor() - arenaWater, B.phase ? 1 : 0]);
+    if (arenaHaz > arenaWater) segs.push([BOSS_ARENA.x0, BOSS_ARENA.x1, bossFloor() - arenaHaz, 2]);
+  }
+  for (const [x0, x1, y, kind] of segs) {
+    const X0 = Math.max(0, x0 - ox), X1 = Math.min(VW, x1 - ox); if (X1 <= X0) continue;
+    cx.fillStyle = kind === 2 ? 'rgba(120,50,170,.55)' : kind === 1 ? 'rgba(70,90,170,.5)' : 'rgba(40,120,170,.5)';
+    for (let X = X0; X < X1; X += 4) { const wy = y - oy + Math.sin((X + ox) * 0.05 + time * 4) * 2.5; cx.fillRect(X, wy, 4, VH); }
+    cx.fillStyle = kind === 2 ? '#d7a8ff' : '#bdefff';
+    for (let X = X0; X < X1; X += 4) { const wy = y - oy + Math.sin((X + ox) * 0.05 + time * 4) * 2.5; cx.fillRect(X, wy, 4, 2); }
+  }
+}
+function drawBoss(ox, oy) {
+  if (typeof BOSS_ARENA === 'undefined' || B.st === 'wait' && P.x < BOSS_ARENA.x0 - 700) return;
+  if (B.st === 'dead' && B.t > 2.2) return;
+  const X = Math.round(B.x - ox), Y = Math.round(B.y - oy), f = B.face, sh = B.st === 'atk' && B.stage === 'W' ? Math.sin(time * 60) * 1.5 : 0;
+  // báo hiệu mưa giáo: vòng gợn trên sàn
+  if (B.st === 'atk' && B.move === 'spears' && B.stage === 'W') for (const x of B.spots) { cx.strokeStyle = '#8ff0ff'; cx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 20); cx.beginPath(); cx.ellipse(x - ox, bossFloor() - oy - 2, 18, 4, 0, 0, 6.283); cx.stroke(); cx.globalAlpha = 1; }
+  if (B.st === 'atk' && B.move === 'dash' && B.stage === 'W') { cx.fillStyle = 'rgba(143,240,255,.5)'; cx.fillRect(f > 0 ? X : X - 600, Y - 3, 600, 2); }
+  cx.save(); cx.translate(X + sh, Y); cx.scale(f, 1);
+  const hit = B.flash > 0, C = (c) => hit ? '#ffffff' : c;
+  const k = B.anim, bob = k === 'idle' ? Math.sin(time * 3) * 2 : 0;
+  // chân + váy giáp
+  cx.fillStyle = C('#123a66'); cx.fillRect(-20, -40, 14, 40); cx.fillRect(6, -40, 14, 40);
+  cx.fillStyle = C('#1B4F8A'); cx.beginPath(); cx.moveTo(-28, -40 + bob); cx.lineTo(28, -40 + bob); cx.lineTo(22, -64 + bob); cx.lineTo(-22, -64 + bob); cx.fill();
+  for (let i = -24; i < 24; i += 8) { cx.fillStyle = C('#3FB8C4'); cx.fillRect(i, -44 + bob, 6, 3); }
+  // thân
+  cx.fillStyle = C('#1B4F8A'); cx.fillRect(-24, -104 + bob, 48, 42);
+  cx.fillStyle = C('#3FB8C4'); cx.fillRect(-28, -106 + bob, 14, 12); cx.fillRect(14, -106 + bob, 14, 12);
+  // lõi nước ở ngực
+  const glow = 0.6 + 0.4 * Math.sin(time * 6);
+  cx.fillStyle = hit ? '#fff' : `rgba(143,240,255,${glow})`; cx.beginPath(); cx.arc(0, -84 + bob, 9, 0, 6.283); cx.fill();
+  // vết nứt Ma Chủng
+  cx.strokeStyle = B.phase ? '#d7a8ff' : '#6B2FA0'; cx.lineWidth = B.phase ? 2 : 1.4; cx.beginPath();
+  cx.moveTo(4, -84 + bob); cx.lineTo(14, -92 + bob); cx.lineTo(18, -78 + bob); cx.moveTo(-5, -82 + bob); cx.lineTo(-14, -70 + bob); cx.lineTo(-10, -62 + bob);
+  if (B.phase) { cx.moveTo(0, -94 + bob); cx.lineTo(-8, -102 + bob); cx.moveTo(10, -66 + bob); cx.lineTo(20, -50 + bob); }
+  cx.stroke();
+  // đầu + mào sóng + tóc bọt
+  cx.fillStyle = C('#123a66'); cx.fillRect(-11, -124 + bob, 22, 20);
+  cx.fillStyle = C('#3FB8C4'); cx.beginPath(); cx.moveTo(-12, -124 + bob); cx.quadraticCurveTo(-4, -142 + bob, 10, -134 + bob); cx.quadraticCurveTo(2, -130 + bob, 4, -124 + bob); cx.fill();
+  cx.fillStyle = C('#E8F6F8'); for (let i = 0; i < 4; i++) cx.fillRect(-18 - i * 5, -120 + i * 5 + bob + Math.sin(time * 5 + i) * 2, 8, 4);
+  cx.fillStyle = B.phase ? '#ff5bd1' : '#8ff0ff'; cx.fillRect(3, -117 + bob, 6, 3);
+  // tay + đinh ba
+  let a = -1.45; if (k === 'cast' || k === 'slam' && B.t < 0.05) a = -1.75; if (k === 'slam') a = 0.2; if (k === 'thrust' || k === 'stuck') a = 0; if (k === 'guard') a = -1.57; if (k === 'roar') a = -2.2;
+  cx.save(); cx.translate(18, -96 + bob); cx.rotate(a);
+  cx.fillStyle = C('#6b8f3a'); cx.fillRect(-30, -2, 110, 4);
+  cx.fillStyle = C('#b9d47a'); cx.fillRect(80, -10, 4, 20); cx.fillRect(80, -10, 14, 3); cx.fillRect(80, -1, 18, 3); cx.fillRect(80, 8, 14, 3);
+  cx.restore();
+  cx.fillStyle = C('#1B4F8A'); cx.fillRect(12, -100 + bob, 12, 10);
+  cx.restore();
+  // khiên nước
+  if (B.st === 'atk' && B.move === 'shield' && B.stage === 'A') {
+    const sx = X + f * 40; cx.globalAlpha = 0.45 + 0.15 * Math.sin(time * 12); cx.fillStyle = '#5fd3ff'; cx.fillRect(sx - 12, Y - 140, 24, 140);
+    cx.globalAlpha = 0.9; cx.fillStyle = '#e8f6f8'; for (let yy = 0; yy < 140; yy += 10) cx.fillRect(sx - 12 + ((yy + time * 80) % 24), Y - 140 + yy, 3, 6); cx.globalAlpha = 1;
+  }
+  // đạn của trùm
+  for (const b of bproj) {
+    const x = Math.round(b.x - ox), y = Math.round(b.y - oy);
+    if (b.k === 'wave') { const hh = b.h; cx.fillStyle = 'rgba(95,211,255,.75)'; cx.beginPath(); cx.moveTo(x - 20, y); cx.quadraticCurveTo(x - 6 * Math.sign(b.vx), y - hh * 1.2, x + 18 * Math.sign(b.vx), y - hh * 0.6); cx.lineTo(x + 20 * Math.sign(b.vx), y); cx.fill(); cx.fillStyle = '#e8f6f8'; cx.fillRect(x - 4, y - hh, 8, 4); }
+    else if (b.k === 'spear') { cx.fillStyle = '#8ff0ff'; cx.fillRect(x - 3, y - b.h, 6, b.h); cx.fillStyle = '#e8f6f8'; cx.beginPath(); cx.moveTo(x - 7, y - 10); cx.lineTo(x, y + 4); cx.lineTo(x + 7, y - 10); cx.fill(); }
+    else { cx.fillStyle = b.back ? '#ff6a5a' : 'rgba(143,240,255,.85)'; cx.beginPath(); cx.arc(x, y, b.r, 0, 6.283); cx.fill(); cx.fillStyle = '#fff'; cx.fillRect(x - b.r * 0.4, y - b.r * 0.5, 3, 3); }
+  }
+}
+function drawBossHud() {
+  if (typeof BOSS_ARENA === 'undefined' || B.st === 'wait' || B.st === 'dead' && B.t > 2.2) return;
+  const n = BT.HP, fill = B.st === 'intro' ? Math.floor(Math.min(1, B.t / 1.0) * n) : B.hp;
+  cx.fillStyle = '#000'; cx.fillRect(VW - 26, 74, 12, n * 4 + 4);
+  for (let i = 0; i < n; i++) { cx.fillStyle = i < fill ? (B.phase ? '#c58bff' : '#5fd3ff') : '#2a2a3a'; cx.fillRect(VW - 24, 76 + (n - 1 - i) * 4, 8, 3); }
+  cx.fillStyle = '#e8f6f8'; cx.font = 'bold 11px sans-serif'; cx.fillText('THỦY TINH', VW - 92, 70);
+}
+function drawTalk() {
+  if (!talk) return;
+  const a = Math.min(1, talk.t * 4, (talk.dur - talk.t) * 4);
+  cx.globalAlpha = a; cx.fillStyle = 'rgba(8,12,30,.85)'; cx.fillRect(40, VH - 96, VW - 80, 58);
+  cx.strokeStyle = '#3FB8C4'; cx.lineWidth = 2; cx.strokeRect(40, VH - 96, VW - 80, 58);
+  cx.fillStyle = talk.who ? '#ffb0c8' : '#8ff0ff'; cx.font = 'bold 12px sans-serif'; cx.fillText(talk.who || 'Thủy Tinh', 54, VH - 78);
+  cx.fillStyle = '#f3e6c4'; cx.font = '13px sans-serif'; talk.lines.forEach((l, i) => cx.fillText(l, 54, VH - 60 + i * 17));
+  cx.globalAlpha = 1;
+}
+
+bossReset();
 
 /* ---------------- vòng lặp ---------------- */
 const hud = document.getElementById('hud');
@@ -944,7 +1365,7 @@ function frame(now) {
     acc -= STEP; time += STEP; P.ox = P.x; P.oy = P.y;
     updateFx(STEP);
     if (hitstop > 0) { hitstop -= STEP; continue; }
-    updatePlayer(STEP); P.inv = Math.max(0, (P.inv || 0) - STEP); updateFoes(STEP); updateEshots(STEP); updateBolts(STEP); updateParts(STEP);
+    updatePlayerW(STEP); updateBoss(STEP); P.inv = Math.max(0, (P.inv || 0) - STEP); updateFoes(STEP); updateEshots(STEP); updateBolts(STEP); updateParts(STEP);
     if (pressed.swap) swapHero();
     pressed.jump = pressed.attack = pressed.dash = pressed.swap = released.jump = false;
     shake = Math.max(0, shake - STEP * 30);
