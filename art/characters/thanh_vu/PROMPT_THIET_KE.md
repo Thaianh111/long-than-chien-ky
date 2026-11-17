@@ -21,7 +21,7 @@ Original character design for a side-scrolling action game: THANH VU, a young Vi
 ## Các tấm hoạt ảnh cần vẽ (ưu tiên từ trên xuống)
 | # | Tấm | Ghi chú |
 |---|---|---|
-| 1 | Bắn đứng, 4 khung | giương nỏ → nạp lực → bắn giật → hạ nỏ |
+| 1 | ✅ Bắn đứng, 4 khung (`sheets/ban_dung_4_khung_gemini.png`) | giương nỏ → nạp lực → bắn giật → hạ nỏ |
 | 2 | Đứng thở, 4 khung | |
 | 3 | Chạy 4 khung + vẽ lại đổi chân 4 khung | làm 2 bước như Xích Long cho khỏi thọt |
 | 4 | Chạy vừa bắn | |
