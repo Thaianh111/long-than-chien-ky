@@ -38,3 +38,4 @@ Engine: Unity, PC + điện thoại.
 
 ## Ghi công (credit)
 - Tiếng hô nhân vật: "Male Grunt/Yelling sounds" — HaelDB, OpenGameArt (CC0 / OGA-BY 3.0).
+- Quái tạm (drone, tháp súng, nổ, đạn) và nền thành phố: "Warped City" — Ansimuz, OpenGameArt (CC0). Đã đổi màu tím Ma Chủng.

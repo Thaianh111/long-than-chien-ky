@@ -60,6 +60,7 @@
    CHỈNH CẢM GIÁC TAY Ở ĐÂY. Đơn vị: pixel (1 ô = 32px), giây.
    ========================================================= */
 const T = {
+  HP: 16, HURT_INV: 1.1, HURT_KNOCK: 220, SHOT_SPEED: 210, SHOT_DMG: 2, TURRET_CD: 2.2, TURRET_RANGE: 380, TOUCH_DMG: 2,
   GRAVITY: 3000,          // trọng lực
   MAX_FALL: 820,          // tốc độ rơi tối đa
   FALL_GRAV: 0.78,        // lúc đang rơi xuống thì trọng lực nhân hệ số này (nhỏ = rơi chậm, nhảy lên không đổi)
@@ -142,7 +143,8 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3','tv_w1','tv_w2','tv_w3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const BG = {}; ['skyline-a','buildings-bg','near-buildings-bg'].forEach(n => { BG[n] = new Image(); BG[n].src = 'bg/' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3','tv_w1','tv_w2','tv_w3','en_drone1','en_drone2','en_drone3','en_drone4','en_turret1','en_turret2','en_turret3','en_turret4','en_turret5','en_turret6','fx_boom1','fx_boom2','fx_boom3','fx_boom4','fx_boom5','fx_boom6','fx_shot1','fx_shot2','fx_shot3','fx_shothit1','fx_shothit2','fx_shothit3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -208,7 +210,7 @@ function resetPlayer(cp) {
   Object.assign(P, { x: cp.x, y: cp.y - P.h, vx: 0, vy: 0, face: 1, ground: false, coyote: 0, jumpBuf: 0,
     dash: 0, dashHeld: 0, airDashes: T.AIR_DASHES, airJumps: T.AIR_JUMPS, dj: 0, dashMomentum: false, wall: 0, wallLock: 0,
     atk: null, atkT: 0, combo: 0, comboQueued: false, hitSet: new Set(), ghosts: [], swing: [], bladeA: T.BLADE_IDLE, bladeL: 1,
-    ox: cp.x, oy: cp.y - P.h, sqx: 1, sqy: 1, vsx: 0, vsy: 0, gait: 0, ghostT: 0, recover: 0, recFrame: null, turnT: 0, lastFace: 1, airT: 0 });
+    hp: T.HP, inv: 0, ox: cp.x, oy: cp.y - P.h, sqx: 1, sqy: 1, vsx: 0, vsy: 0, gait: 0, ghostT: 0, recover: 0, recFrame: null, turnT: 0, lastFace: 1, airT: 0 });
 }
 let cpIndex = 0; resetPlayer(checkpoints[0]);
 function respawn() { resetPlayer(checkpoints[cpIndex]); warpIn(); }
@@ -414,18 +416,51 @@ function slashBox() {
 
 /* ---------------- quái để chém thử ---------------- */
 const foes = [];
-const addFoe = (type, tx, ty) => { const w = type === 'drone' ? 30 : 34, h = type === 'drone' ? 26 : 46;
+const addFoe = (type, tx, ty) => { const w = type === 'drone' ? 34 : 36, h = type === 'drone' ? 30 : 44;
   foes.push({ type, ox: tx * TS, oy: ty * TS + TS - h, x: tx * TS, y: ty * TS + TS - h, w, h,
-  hp: type === 'drone' ? 3 : 5, maxHp: type === 'drone' ? 3 : 5, vx: 0, vy: 0, flash: 0, dead: 0, t: Math.random() * 6, dir: -1 }); };
-addFoe('drone', 13, 9); addFoe('walker', 28, 14); addFoe('drone', 47, 4); addFoe('walker', 66, 14); addFoe('drone', 74, 7);
-addFoe('walker', 82, 14); addFoe('drone', 86, 10); addFoe('walker', 96, 14);
+  hp: type === 'drone' ? 3 : 5, maxHp: type === 'drone' ? 3 : 5, vx: 0, vy: 0, flash: 0, dead: 0, t: Math.random() * 6, dir: -1, cd: 1 + Math.random() }); };
+// quái tạm: drone bay + tháp súng (sprite Warped City của Ansimuz, CC0, đổi màu tím Ma Chủng)
+addFoe('drone', 13, 9); addFoe('turret', 28, 14); addFoe('drone', 47, 4); addFoe('turret', 66, 14); addFoe('drone', 74, 7);
+addFoe('turret', 82, 14); addFoe('drone', 86, 10); addFoe('turret', 96, 14);
+const eshots = [];
+function hurtPlayer(dmg, fromX) {
+  if (P.warp || P.inv > 0) return;
+  P.hp -= dmg; P.inv = T.HURT_INV; const d = P.x + P.w / 2 < fromX ? -1 : 1;
+  P.vx = d * T.HURT_KNOCK; P.vy = -260; P.dash = 0; P.atk = null; P.arc = null; P.aiming = false;
+  shake = T.SHAKE * 1.6; flashT = 0.05; sparks(P.x + P.w / 2, P.y + P.h / 2, 14, '#ff3b6b'); sfxHit(true);
+  if (P.hp <= 0) { sparks(P.x + P.w / 2, P.y + P.h / 2, 40, '#ffd34d'); respawn(); }
+}
+function boom(f) { fx.push({ k: 'boom', x: f.x + f.w / 2, y: f.y + f.h / 2, life: 0.42, max: 0.42 }); }
+function updateEshots(dt) {
+  const box = P.atk ? slashBox() : null;
+  for (const b of eshots) {
+    b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt; b.t += dt;
+    const pop = () => { b.life = 0; fx.push({ k: 'shothit', x: b.x, y: b.y, life: 0.15, max: 0.15 }); };
+    if (solidAt(b.x, b.y)) { pop(); continue; }
+    if (box && b.x > box.x && b.x < box.x + box.w && b.y > box.y && b.y < box.y + box.h) { pop(); sparks(b.x, b.y, 8, '#ffd34d'); continue; }  // chém đạn như Zero
+    for (const t of bolts) if (Math.abs(t.x - b.x) < 14 && Math.abs(t.y - b.y) < 12) { pop(); break; }
+    if (b.life > 0 && b.x > P.x && b.x < P.x + P.w && b.y > P.y + 6 && b.y < P.y + P.h) { pop(); hurtPlayer(T.SHOT_DMG, b.x - b.vx); }
+  }
+  for (let i = eshots.length - 1; i >= 0; i--) if (eshots[i].life <= 0) eshots.splice(i, 1);
+}
 function updateFoes(dt) {
   const box = slashBox();
   for (const f of foes) {
-    if (f.dead > 0) { f.dead -= dt; if (f.dead <= 0) Object.assign(f, { x: f.ox, y: f.oy, hp: f.maxHp, vx: 0, vy: 0 }); continue; }
+    if (f.dead > 0) { f.dead -= dt; if (f.dead <= 0) Object.assign(f, { ox: f.hx ?? f.ox, x: f.hx ?? f.ox, y: f.oy, hp: f.maxHp, vx: 0, vy: 0, kbx: 0 }); continue; }
+    if (f.hx === undefined) f.hx = f.ox;
     f.t += dt; f.flash = Math.max(0, f.flash - dt);
-    if (f.type === 'drone') {
-      f.vx *= Math.pow(0.02, dt); f.x += f.vx * dt;
+    const pcx = P.x + P.w / 2, pcy = P.y + P.h / 2;
+    if (!P.warp && pcx > f.x - 4 && pcx < f.x + f.w + 4 && P.y < f.y + f.h && P.y + P.h > f.y) hurtPlayer(T.TOUCH_DMG, f.x + f.w / 2);
+    if (f.type === 'turret') {
+      f.dir = pcx < f.x + f.w / 2 ? -1 : 1; f.cd -= dt; f.fire = Math.max(0, (f.fire || 0) - dt);
+      if (f.cd <= 0 && Math.abs(pcx - f.x) < T.TURRET_RANGE && Math.abs(pcy - f.y) < 160 && !P.warp) {
+        f.cd = T.TURRET_CD; f.fire = 0.36;
+        const sx = f.x + f.w / 2 + f.dir * 16, sy = f.y + 8;
+        eshots.push({ x: sx, y: sy, vx: f.dir * T.SHOT_SPEED, vy: 0, life: 3, t: 0 });
+      }
+    } else if (f.type === 'drone') {
+      if (Math.abs(pcx - f.x) < 300) f.ox += Math.sign(pcx - f.x - f.w / 2) * 22 * dt;   // lừ đừ bám theo
+      f.vx *= Math.pow(0.02, dt); f.x = f.ox + (f.kbx = ((f.kbx || 0) + f.vx * dt) * Math.pow(0.2, dt));
       f.y = f.oy + Math.sin(f.t * 2) * 10 + (f.kby || 0); f.kby = (f.kby || 0) * Math.pow(0.05, dt);
     } else {
       if (Math.abs(f.vx) < 60) f.vx = f.dir * 60;
@@ -439,7 +474,7 @@ function updateFoes(dt) {
     }
     if (box && !P.hitSet.has(f) && box.x < f.x + f.w && box.x + box.w > f.x && box.y < f.y + f.h && box.y + box.h > f.y) {
       P.hitSet.add(f); f.hp -= P.atk.dmg; f.flash = 0.12;
-      f.vx = P.face * P.atk.knock; if (f.type === 'drone') f.kby = -16; else f.vy = -240;
+      f.vx = f.type === 'turret' ? 0 : P.face * P.atk.knock; if (f.type === 'drone') f.kby = -16;
       const big = P.atk.dmg > 1, cxh = f.x + f.w / 2, cyh = f.y + f.h / 2;
       hitstop = T.HITSTOP * (big ? T.FINISH_STOP : 1); shake = T.SHAKE * (big ? 2.2 : 1);
       // vết cắt sáng chéo qua quái + vòng nổ + mảnh văng theo hướng chém
@@ -449,7 +484,7 @@ function updateFoes(dt) {
       for (let i = 0; i < (big ? 18 : 10); i++) { const a = (P.face > 0 ? 0 : Math.PI) + (Math.random() - 0.5) * 1.6, sp = 200 + Math.random() * 420;
         parts.push({ x: cxh, y: cyh, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120, life: 0.2 + Math.random() * 0.3, c: i % 3 ? '#ff6a2b' : '#fff1b8' }); }
       sfxHit(big); hits++;
-      if (f.hp <= 0) { f.dead = 2.5; sparks(f.x + f.w / 2, f.y + f.h / 2, 26, '#ffd34d'); kills++; }
+      if (f.hp <= 0) { f.dead = 2.5; boom(f); sparks(f.x + f.w / 2, f.y + f.h / 2, 26, '#ffd34d'); kills++; }
     }
   }
 }
@@ -500,12 +535,12 @@ function updateBolts(dt) {
     for (const f of foes) {
       if (f.dead > 0 || b.hit.has(f)) continue;
       if (b.x + r > f.x && b.x - r < f.x + f.w && b.y + r > f.y && b.y - r < f.y + f.h) {
-        b.hit.add(f); f.hp -= T.TV.DMG[b.lv]; f.flash = 0.12; f.vx = Math.sign(b.vx) * (160 + b.lv * 140);
-        if (f.type === 'drone') f.kby = -8 - b.lv * 6; else f.vy = -120 - b.lv * 80;
+        b.hit.add(f); f.hp -= T.TV.DMG[b.lv]; f.flash = 0.12; f.vx = f.type === 'turret' ? 0 : Math.sign(b.vx) * (160 + b.lv * 140);
+        if (f.type === 'drone') f.kby = -8 - b.lv * 6;
         hitstop = Math.max(hitstop, T.TV.STOP[b.lv]); shake = Math.max(shake, T.SHAKE * (0.5 + b.lv * 0.5));
         fx.push({ k: 'ring', x: b.x, y: b.y, life: 0.16, max: 0.16, big: b.lv === 2, col: '#7fe3ff' });
         sparks(b.x, b.y, 8 + b.lv * 6, '#7fe3ff'); sfxHit(b.lv === 2); hits++;
-        if (f.hp <= 0) { f.dead = 2.5; sparks(f.x + f.w / 2, f.y + f.h / 2, 26, '#bff4ff'); kills++; }
+        if (f.hp <= 0) { f.dead = 2.5; boom(f); sparks(f.x + f.w / 2, f.y + f.h / 2, 26, '#bff4ff'); kills++; }
         if (b.lv < 2) { b.life = 0; break; }   // tên nạp đầy xuyên qua quái
       }
     }
@@ -830,11 +865,11 @@ function draw() {
   const gr = cx.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#141a2e'); gr.addColorStop(1, '#2a2440');
   cx.fillStyle = gr; cx.fillRect(0, 0, VW, VH);
   cx.save(); cx.translate(Math.round(sx), Math.round(sy));
-  cx.fillStyle = '#1d2238';
-  for (let i = 0; i < 12; i++) { const bx = i * 160 - (cam.x * 0.25) % 160; cx.beginPath(); cx.moveTo(bx, 300); cx.lineTo(bx + 80, 150 + (i % 3) * 30); cx.lineTo(bx + 160, 300); cx.fill(); }
-  cx.strokeStyle = 'rgba(212,175,55,.18)'; cx.lineWidth = 2; cx.beginPath();
-  for (let t = 0; t < 18.8; t += 0.1) { const r = 8 + t * 4, px = VW * 0.78 - cam.x * 0.08 + Math.cos(t + time * 0.2) * r, py = 90 + Math.sin(t + time * 0.2) * r * 0.5; t ? cx.lineTo(px, py) : cx.moveTo(px, py); }
-  cx.stroke();
+  const par = (im, f, y, k) => { if (!im.width) return; const w = im.width * k, x0 = -((cam.x * f) % w); for (let x = x0 - w; x < VW; x += w) cx.drawImage(im, Math.round(x), y, w, im.height * k); };
+  par(BG['skyline-a'], 0.05, 0, 1.5);                    // nền thành phố Warped City (Ansimuz, CC0)
+  par(BG['buildings-bg'], 0.15, VH - 124 * 1.5 - 20, 1.5);
+  cx.globalAlpha = 0.85; par(BG['near-buildings-bg'], 0.3, VH - 209 * 1.5 + 40, 1.5); cx.globalAlpha = 1;
+  cx.fillStyle = 'rgba(14,10,30,.55)'; cx.fillRect(0, 0, VW, VH);
   const ox = Math.round(cam.x), oy = Math.round(cam.y);
   const i0 = Math.floor(ox / TS), i1 = i0 + Math.ceil(VW / TS) + 2;
   for (let j = 0; j < MH; j++) for (let i = i0; i < i1; i++) {
@@ -851,12 +886,18 @@ function draw() {
   for (const f of foes) {
     if (f.dead > 0) continue;
     const X = Math.round(f.x - ox), Y = Math.round(f.y - oy);
-    cx.fillStyle = f.flash > 0 ? '#fff' : (f.type === 'drone' ? '#4c7a8f' : '#5b4f7a');
-    if (f.type === 'drone') { cx.fillRect(X, Y + 6, f.w, f.h - 12); cx.fillRect(X + 8, Y, f.w - 16, f.h); cx.fillStyle = '#9fe8ff'; cx.fillRect(X + 11, Y + 9, 8, 8); }
-    else { cx.fillRect(X, Y, f.w, f.h); cx.fillStyle = '#ff5a5a'; cx.fillRect(f.dir > 0 ? X + 22 : X + 4, Y + 10, 8, 5); }
+    const img = f.type === 'drone' ? FR['en_drone' + (1 + Math.floor(f.t * 8) % 4)]
+      : FR['en_turret' + (f.fire > 0 ? 1 + Math.floor((0.36 - f.fire) / 0.06) % 6 : 1)];
+    cx.save(); cx.translate(X + f.w / 2, Y + f.h); cx.scale(f.type === 'turret' ? f.dir : 1, 1);
+    if (img && img.complete && img.width) {
+      cx.drawImage(img, -Math.round(img.width / 2), -img.height + (f.type === 'drone' ? 11 : 1));
+      if (f.flash > 0) { cx.globalCompositeOperation = 'lighter'; cx.globalAlpha = 0.85; cx.drawImage(img, -Math.round(img.width / 2), -img.height + (f.type === 'drone' ? 11 : 1)); }
+    }
+    cx.restore();
     cx.fillStyle = '#000'; cx.fillRect(X, Y - 9, f.w, 4); cx.fillStyle = '#ffcf5a'; cx.fillRect(X, Y - 9, f.w * f.hp / f.maxHp, 4);
   }
-  drawPlayer(renderAlpha);
+  for (const b of eshots) { const im = FR['fx_shot' + (1 + Math.floor(b.t * 12) % 3)]; if (im && im.width) { cx.save(); cx.translate(Math.round(b.x - ox), Math.round(b.y - oy)); cx.scale(-Math.sign(b.vx) || 1, 1); cx.drawImage(im, -15, -11); cx.restore(); } }
+  if (!(P.inv > 0 && Math.floor(P.inv * 20) % 2)) drawPlayer(renderAlpha);
   for (const p of parts) { cx.globalAlpha = Math.min(1, p.life * 3); cx.fillStyle = p.c; cx.fillRect(Math.round(p.x - ox), Math.round(p.y - oy), 3, 3); }
   cx.globalAlpha = 1; drawBolts(ox, oy);
   for (const e of fx) {
@@ -865,6 +906,9 @@ function draw() {
       cx.rotate(e.a); const L = e.L * (1.2 - k * 0.4);
       cx.globalAlpha = k; cx.fillStyle = '#fff6d0'; cx.fillRect(-L / 2, -2 * k - 0.5, L, 4 * k + 1);
       cx.globalAlpha = k * 0.5; cx.fillStyle = '#ff8a2b'; cx.fillRect(-L / 2, -5 * k, L, 10 * k);
+    } else if (e.k === 'boom' || e.k === 'shothit') {
+      const n = e.k === 'boom' ? 6 : 3, i = Math.min(n - 1, Math.floor((1 - k) * n)), im = FR[(e.k === 'boom' ? 'fx_boom' : 'fx_shothit') + (i + 1)];
+      if (im && im.width) cx.drawImage(im, -Math.round(im.width / 2), -Math.round(im.height / 2));
     } else if (e.k === 'ring') {
       const r = (1 - k) * (e.big ? 46 : 30) + 6; cx.globalAlpha = k; cx.strokeStyle = e.col || '#ffd34d'; cx.lineWidth = 3 * k + 1;
       cx.beginPath(); cx.arc(0, 0, r, 0, 6.283); cx.stroke();
@@ -872,6 +916,8 @@ function draw() {
     cx.restore();
   }
   cx.globalAlpha = 1;
+  cx.fillStyle = '#000'; cx.fillRect(14, 74, 12, T.HP * 6 + 4);   // thanh máu kiểu Mega Man
+  for (let i = 0; i < T.HP; i++) { cx.fillStyle = i < P.hp ? (HERO === 'tv' ? '#7fe3ff' : '#ffb347') : '#2a2a3a'; cx.fillRect(16, 76 + (T.HP - 1 - i) * 6, 8, 4); }
   if (flashT > 0) { cx.globalAlpha = flashT / 0.06 * 0.35; cx.fillStyle = '#fff1d6'; cx.fillRect(0, 0, VW, VH); cx.globalAlpha = 1; }
   cx.globalAlpha = 1;
   cx.fillStyle = 'rgba(243,230,196,.75)'; cx.font = '12px sans-serif';
@@ -898,7 +944,7 @@ function frame(now) {
     acc -= STEP; time += STEP; P.ox = P.x; P.oy = P.y;
     updateFx(STEP);
     if (hitstop > 0) { hitstop -= STEP; continue; }
-    updatePlayer(STEP); updateFoes(STEP); updateBolts(STEP); updateParts(STEP);
+    updatePlayer(STEP); P.inv = Math.max(0, (P.inv || 0) - STEP); updateFoes(STEP); updateEshots(STEP); updateBolts(STEP); updateParts(STEP);
     if (pressed.swap) swapHero();
     pressed.jump = pressed.attack = pressed.dash = pressed.swap = released.jump = false;
     shake = Math.max(0, shake - STEP * 30);
