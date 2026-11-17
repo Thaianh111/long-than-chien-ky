@@ -1,0 +1,328 @@
+{
+  "generatedBy": "Sorceress AutoSprite V3",
+  "spriteCount": 12,
+  "combatFiles": 0,
+  "audioFiles": 0,
+  "timing": {
+    "sourceFps": 30,
+    "sampleEvery": 2,
+    "defaultPlaybackFps": 15,
+    "formula": "playbackFps = sourceFps / sampleEvery (30/N)",
+    "soundSync": "No audio packed in this zip. If you add MP3s later, start them with each animation at defaultPlaybackFps."
+  },
+  "playbackGuide": "Source clips are treated as 30fps. Sheets extract every Nth frame (sampleEvery); default playbackFps ≈ 30/N so wall-clock timing matches the source (e.g. every 4 → 7.5fps). animation.sections is authoritative (role, frames, fps, loop/pingPong/reverse). Frame indices are 0-based on the exported sheet. If combat.file is set, load that .hits.json for damage boxes. Start each audioFile with its sprite animation. At the pack/sprite default playbackFps (sourceFps / sampleEvery), SFX stay aligned with the source clip. Changing fps without retiming audio will desync sound.",
+  "sprites": [
+    {
+      "sprite": "Lands_from_above_into_a_low_crouch_w",
+      "image": "Lands_from_above_into_a_low_crouch_w.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Gets_hit_from_the_front_recoils_bac",
+      "image": "Gets_hit_from_the_front_recoils_bac.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 4,
+        "rows": 4,
+        "frames": 16,
+        "imageWidth": 2048,
+        "imageHeight": 2048
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 15,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "An_invisible_wall_is_on_the_LEFT",
+      "image": "An_invisible_wall_is_on_the_LEFT.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 4,
+        "rows": 4,
+        "frames": 16,
+        "imageWidth": 2048,
+        "imageHeight": 2048
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 15,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Bursts_into_a_fast_low_ground_dash_t",
+      "image": "Bursts_into_a_fast_low_ground_dash_t.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 4,
+        "rows": 4,
+        "frames": 16,
+        "imageWidth": 2048,
+        "imageHeight": 2048
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 15,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "In_mid-air_with_knees_tucked_aims_t",
+      "image": "In_mid-air_with_knees_tucked_aims_t.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Strict_side_profile_view_facing_righ",
+      "image": "Strict_side_profile_view_facing_righ.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Strict_side_profile_view_facing_righ_2",
+      "image": "Strict_side_profile_view_facing_righ_2.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Crouches_jumps_straight_up_with_kne",
+      "image": "Crouches_jumps_straight_up_with_kne.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Standing_raises_the_crossbow_to_the",
+      "image": "Standing_raises_the_crossbow_to_the.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Running_to_the_right_in_place_exactl",
+      "image": "Running_to_the_right_in_place_exactl.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Running_to_the_right_in_place_athle",
+      "image": "Running_to_the_right_in_place_athle.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    },
+    {
+      "sprite": "Standing_ready_with_the_crossbow_hel",
+      "image": "Standing_ready_with_the_crossbow_hel.png",
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "sheet": {
+        "cols": 6,
+        "rows": 6,
+        "frames": 31,
+        "imageWidth": 3072,
+        "imageHeight": 3072
+      },
+      "timing": {
+        "sourceFps": 30,
+        "sampleEvery": 2,
+        "playbackFps": 15,
+        "formula": "playbackFps ≈ sourceFps / sampleEvery (30/N)",
+        "note": "Play at playbackFps to match original 30fps wall-clock timing with fewer extracted frames."
+      },
+      "defaultAnimation": {
+        "start": 0,
+        "end": 30,
+        "fps": 15,
+        "loop": true
+      }
+    }
+  ]
+}

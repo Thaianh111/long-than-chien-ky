@@ -37,7 +37,7 @@ namespace LongThan.Core
                 }
                 if (TvRunning(P) && shooting) return A["tv_runshoot"][(int)Math.Floor(P.gait) % A["tv_runshoot"].Length];
                 if (P.shootT > 0) return P.shootT > T.TV.SHOOT_ANIM - 0.07f ? "tv_b3" : "tv_b4";
-                if (P.aiming) return P.aimT < 0.05f ? "tv_b1" : "tv_b2";
+                if (P.aiming) return P.charge >= T.TV.CHARGE1 ? Seq("tv_charge", time, 12) : P.aimT < 0.05f ? "tv_b1" : "tv_b2";   // tụ lực: đầu nỏ rực sáng
                 if (P.landT > 0 && Math.Abs(P.vx) <= 40) return "tv_j5";
                 if (P.ground && P.dash <= 0 && Math.Abs(P.vx) > 40) return A["tv_run"][(int)Math.Floor(P.gait) % A["tv_run"].Length];
                 return Seq("tv_idle", time, T.IDLE_FPS);

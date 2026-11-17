@@ -32,7 +32,7 @@ export function pickFrame(g: Game): string {
     }
     if (tvRunning(P) && (P.aiming || P.shootT > 0)) return ANIM.tv_runshoot[Math.floor(P.gait) % ANIM.tv_runshoot.length];
     if (P.shootT > 0) return P.shootT > T.TV.SHOOT_ANIM - 0.07 ? 'tv_b3' : 'tv_b4';
-    if (P.aiming) return P.aimT < 0.05 ? 'tv_b1' : 'tv_b2';
+    if (P.aiming) return P.charge >= T.TV.CHARGE1 ? seq('tv_charge', time, 12) : P.aimT < 0.05 ? 'tv_b1' : 'tv_b2';   // tụ lực: đầu nỏ rực sáng
     if (P.landT > 0 && Math.abs(P.vx) <= 40) return 'tv_j5';
     if (P.ground && !P.dash && Math.abs(P.vx) > 40) return ANIM.tv_run[Math.floor(P.gait) % ANIM.tv_run.length];
     return seq('tv_idle', time, T.IDLE_FPS);
