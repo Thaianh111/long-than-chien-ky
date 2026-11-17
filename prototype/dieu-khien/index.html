@@ -69,6 +69,13 @@ const T = {
     { time: 0.24, from: 0.04, to: 0.11, a0: 1.1,  a1: -2.0, len: 1.05, reach: 70, h: 84,  dmg: 1, lunge: 70,  knock: 280 },
     { time: 0.36, from: 0.06, to: 0.16, a0: -2.7, a1: 1.7,  len: 1.4,  reach: 92, h: 110, dmg: 2, lunge: 220, knock: 520 },
   ],
+  // --- hoạt ảnh (chỉ ảnh hưởng hình, không đổi cảm giác tay) ---
+  SQUASH_K: 520,          // độ cứng lò xo co giãn (cao = bật về nhanh)
+  SQUASH_D: 26,           // độ hãm lò xo (cao = ít nảy)
+  STRIDE: 46,             // chạy được bao nhiêu px thì đổi 1 bước chân
+  RUN_BOB: 3,             // nhún lên xuống khi chạy (px)
+  GHOST_EVERY: 0.032,     // bao lâu để lại 1 bóng mờ khi lướt (giây)
+  RECOVER: 0.09,          // giữ dáng chém thêm chút sau nhát cuối cho khỏi giật về
   AIR_SLASH: { time: 0.26, from: 0.02, to: 0.16, a0: -1.6, a1: 4.6, len: 1.2, reach: 76, h: 120, dmg: 1, lunge: 0, knock: 300 },
 };
 
@@ -141,7 +148,8 @@ const P = { w: 22, h: 78 };
 function resetPlayer(cp) {
   Object.assign(P, { x: cp.x, y: cp.y - P.h, vx: 0, vy: 0, face: 1, ground: false, coyote: 0, jumpBuf: 0,
     dash: 0, dashHeld: 0, airDashes: T.AIR_DASHES, dashMomentum: false, wall: 0, wallLock: 0,
-    atk: null, atkT: 0, combo: 0, comboQueued: false, hitSet: new Set(), ghosts: [], swing: [], bladeA: T.BLADE_IDLE, bladeL: 1 });
+    atk: null, atkT: 0, combo: 0, comboQueued: false, hitSet: new Set(), ghosts: [], swing: [], bladeA: T.BLADE_IDLE, bladeL: 1,
+    ox: cp.x, oy: cp.y - P.h, sqx: 1, sqy: 1, vsx: 0, vsy: 0, gait: 0, ghostT: 0, recover: 0, recFrame: null, turnT: 0, lastFace: 1, airT: 0 });
 }
 let cpIndex = 0; resetPlayer(checkpoints[0]);
 function respawn() { resetPlayer(checkpoints[cpIndex]); }
@@ -175,6 +183,24 @@ function bladeAngle() {
   return a.a0 + (a.a1 - a.a0) * easeOut((P.atkT - a.from) / (a.to - a.from));
 }
 
+function squash(sx, sy) { P.sqx = sx; P.sqy = sy; P.vsx = 0; P.vsy = 0; }
+function updateAnim(dt) {
+  // lò xo co giãn: luôn bật về 1
+  for (const [k, v] of [['sqx', 'vsx'], ['sqy', 'vsy']]) {
+    P[v] += (-(P[k] - 1) * T.SQUASH_K - P[v] * T.SQUASH_D) * dt; P[k] += P[v] * dt;
+  }
+  if (P.ground && !P.dash && Math.abs(P.vx) > 40) {
+    const before = Math.floor(P.gait);
+    P.gait += Math.abs(P.vx) * dt / T.STRIDE;
+    if (Math.floor(P.gait) !== before) dust(P.x + P.w / 2 - P.face * 8, P.y + P.h, 2);
+  } else P.gait = 0;
+  if (P.face !== P.lastFace) { if (P.ground && !P.atk) { P.turnT = 0.08; squash(0.7, 1.04); } P.lastFace = P.face; }
+  P.turnT = Math.max(0, P.turnT - dt);
+  P.recover = Math.max(0, P.recover - dt);
+  if (P.atk || P.dash || (!P.ground && P.recover)) P.recover = 0;
+  P.airT = P.ground ? 0 : P.airT + dt;
+}
+
 function updatePlayer(dt) {
   const dirIn = (held.right ? 1 : 0) - (held.left ? 1 : 0);
   P.coyote = P.ground ? T.COYOTE : Math.max(0, P.coyote - dt);
@@ -190,7 +216,7 @@ function updatePlayer(dt) {
     P.atkT += dt;
     if (P.atkT >= P.atk.time) {
       if (P.comboQueued && P.ground && !P.atkAir) { P.combo++; startAttack(); }
-      else { P.atk = null; P.combo = 0; }
+      else { P.recFrame = atkFrame(true); P.recover = T.RECOVER; P.atk = null; P.combo = 0; }
     }
   }
   // vệt chém: lưu góc lưỡi đao theo thời gian
@@ -204,8 +230,8 @@ function updatePlayer(dt) {
 
   // --- lướt ---
   if (pressed.dash && !P.dash && !groundSlashing) {
-    if (P.ground) { P.dash = T.DASH_TIME; P.dashHeld = 0; }
-    else if (P.airDashes > 0 && !P.wall) { P.airDashes--; P.dash = T.DASH_TIME * 0.8; P.dashHeld = 0; P.vy = 0; }
+    if (P.ground) { P.dash = T.DASH_TIME; P.dashHeld = 0; squash(1.18, 0.88); dust(P.x + P.w / 2 - P.face * 10, P.y + P.h); }
+    else if (P.airDashes > 0 && !P.wall) { P.airDashes--; P.dash = T.DASH_TIME * 0.8; P.dashHeld = 0; P.vy = 0; squash(1.18, 0.88); }
     if (P.dash && dirIn) P.face = dirIn;
   }
   if (P.dash) {
@@ -214,7 +240,7 @@ function updatePlayer(dt) {
     P.vx = P.face * T.DASH_SPEED;
     if (!P.ground) P.vy = Math.min(P.vy, 0);
     if (P.ground) P.dashMomentum = true;
-    if (Math.random() < 0.5) P.ghosts.push({ x: P.x, y: P.y, f: P.face, a: 0.55 });
+    P.ghostT -= dt; if (P.ghostT <= 0) { P.ghostT = T.GHOST_EVERY; P.ghosts.push({ x: P.x, y: P.y, f: P.face, a: 0.6, n: 'dash' }); }
     if (P.dash <= 0) P.dash = 0;
   }
 
@@ -240,14 +266,14 @@ function updatePlayer(dt) {
   // --- nhảy ---
   if (P.jumpBuf > 0) {
     if (P.coyote > 0) {
-      P.vy = -T.JUMP_VEL; P.coyote = 0; P.jumpBuf = 0;
+      P.vy = -T.JUMP_VEL; P.coyote = 0; P.jumpBuf = 0; squash(0.82, 1.2); dust(P.x + P.w / 2, P.y + P.h);
       P.dashMomentum = !!(P.dash || held.dash); P.dash = 0; P.ground = false;
     } else if (!P.ground && (P.wall || touchingWall(-1) || touchingWall(1))) {
       const w = P.wall || (touchingWall(1) ? 1 : -1);
       const climb = dirIn === w;              // giữ hướng vào tường = leo lên chính bức tường
       P.dashMomentum = !!held.dash;
       P.vx = -w * (P.dashMomentum ? T.DASH_SPEED : climb ? T.WALL_KICK_VX : T.WALL_JUMP_VX);
-      P.vy = -T.WALL_JUMP_VY; P.face = climb && !P.dashMomentum ? w : -w;
+      P.vy = -T.WALL_JUMP_VY; squash(0.85, 1.15); P.face = climb && !P.dashMomentum ? w : -w;
       P.wallLock = climb && !P.dashMomentum ? T.WALL_KICK_LOCK : T.WALL_JUMP_LOCK; P.jumpBuf = 0; P.wall = 0;
       sparks(P.x + (w > 0 ? P.w : 0), P.y + P.h - 8, 6, '#ffd34d');
     }
@@ -261,14 +287,15 @@ function updatePlayer(dt) {
   }
 
   P.x += P.vx * dt; collideX(P);
-  const wasGround = P.ground;
+  const wasGround = P.ground, fallV = P.vy;
   P.y += P.vy * dt; collideY(P);
-  if (P.ground) { P.airDashes = T.AIR_DASHES; if (!P.dash) P.dashMomentum = false; if (!wasGround) dust(P.x + P.w / 2, P.y + P.h); }
+  if (P.ground) { P.airDashes = T.AIR_DASHES; if (!P.dash) P.dashMomentum = false; if (!wasGround) { dust(P.x + P.w / 2, P.y + P.h); const k = Math.min(1, fallV / T.MAX_FALL); squash(1 + 0.22 * k, 1 - 0.24 * k); } }
   if (P.ground && P.atkAir) { P.atk = null; P.combo = 0; }
 
   checkpoints.forEach((c, i) => { if (P.x > c.x - 16 && i > cpIndex) cpIndex = i; });
   if (P.y > MH * TS + 80) respawn();
 
+  updateAnim(dt);
   P.ghosts.forEach(g => g.a -= dt * 2.4); P.ghosts = P.ghosts.filter(g => g.a > 0);
 }
 
@@ -323,9 +350,9 @@ function updateFoes(dt) {
 /* ---------------- hiệu ứng ---------------- */
 const parts = [];
 function sparks(x, y, n, c) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, s = 80 + Math.random() * 320; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 80, life: 0.25 + Math.random() * 0.3, c }); } }
-function dust(x, y) { for (let i = 0; i < 6; i++) parts.push({ x: x + (Math.random() - 0.5) * 20, y, vx: (Math.random() - 0.5) * 120, vy: -Math.random() * 80, life: 0.3, c: '#9aa3b5' }); }
+function dust(x, y, n = 6) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 20, y, vx: (Math.random() - 0.5) * 120, vy: -Math.random() * 80, life: 0.3, c: '#9aa3b5' }); }
 function updateParts(dt) { for (const p of parts) { p.life -= dt; p.vy += 1000 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } for (let i = parts.length - 1; i >= 0; i--) if (parts[i].life <= 0) parts.splice(i, 1); }
-let hitstop = 0, shake = 0, hits = 0, kills = 0;
+let hitstop = 0, shake = 0, hits = 0, kills = 0, renderAlpha = 1;
 
 /* ---------------- vẽ ---------------- */
 let VW = 640; const VH = 360;
@@ -372,39 +399,71 @@ function drawSwing() {
 }
 
 
-function pickFrame() {
-  if (P.atk) {
-    const pre = P.atkT < P.atk.from;
-    if (P.atkAir) return 'x_overhead';
-    if (P.combo === 0) return pre ? 'windup' : 'slash_thrust';
-    if (P.combo === 1) return pre ? 'slash_thrust' : 'slash_up';
-    return pre ? 'slash_up' : 'slash_thrust';
-  }
-  if (P.dash) return 'dash';
-  if (P.wall || !P.ground) return 'jump';
-  if (Math.abs(P.vx) > 40) return Math.floor(time * 8) % 2 ? 'run' : 'dash';
-  return 'idle';
+// Điểm neo của từng dáng = vị trí HÔNG trong khung 150x110 (chân luôn chạm đáy khung).
+// Trước đây mọi dáng đều canh giữa khung nên đổi dáng là thân người nhảy ngang tới 30px -> giật.
+const FA = { idle: 73, run: 57, jump: 98, dash: 88, windup: 74, slash_thrust: 75, slash_up: 80, x_overhead: 79 };
+// Tâm vệt chém (vai) so với chân, theo từng nhát
+const SWING_AT = { 0: { x: 8, y: -52 }, 1: { x: 8, y: -56 }, 2: { x: 10, y: -50 }, air: { x: 2, y: -58 } };
+// Thêm khung mới: bỏ file vào frames/ rồi ghi tên vào đây theo thứ tự (vd run: ['run1','run2',...]).
+const ANIM = { idle: ['idle'], run: ['run'], jump_up: ['jump'], jump_down: ['jump'], wall: ['jump'], dash: ['dash'] };
+
+function atkFrame(endPose) {
+  const a = P.atk; if (!a) return null;
+  const pre = !endPose && P.atkT < a.from;
+  if (P.atkAir) return pre ? 'slash_up' : 'x_overhead';
+  if (P.combo === 0) return pre ? 'windup' : 'slash_thrust';
+  if (P.combo === 1) return pre ? 'slash_thrust' : 'slash_up';
+  return pre ? 'slash_up' : 'slash_thrust';
 }
-function drawPlayer() {
-  const sx = Math.round(P.x + P.w / 2 - cam.x), sy = Math.round(P.y + P.h - cam.y), f = P.face;
-  for (const g of P.ghosts) {
-    cx.save(); cx.globalAlpha = g.a * 0.45; cx.translate(Math.round(g.x + P.w / 2 - cam.x), Math.round(g.y + P.h - cam.y)); cx.scale(g.f, 1);
-    const gf = FR.dash; if (gf.complete && gf.naturalWidth) { cx.drawImage(gf, -FW / 2, -FH + 2); }
-    cx.restore();
-  }
-  cx.save();
-  cx.translate(sx, sy); cx.scale(f, 1);
-  // tư thế tạm thay cho frame hoạt ảnh (sẽ thay bằng sprite thật)
-  const run = P.ground && Math.abs(P.vx) > 40 && !P.dash ? Math.abs(Math.sin(time * 14)) * 3 : 0;
-  let lean = 0;
-  if (P.dash) lean = -0.18; else if (!P.ground) lean = P.vy < 0 ? -0.06 : 0.05;
-  if (P.atk && !P.atkAir) lean = P.combo === 2 ? -0.12 : -0.05;
-  cx.translate(0, -run);
-  if (P.wall) cx.scale(-1, 1);
-  const fr = FR[pickFrame()];
-  cx.save(); cx.translate(SWING_PIVOT.x, SWING_PIVOT.y); drawSwing(); cx.restore();
-  if (fr && fr.complete && fr.naturalWidth) cx.drawImage(fr, -FW / 2, -FH + 2);
+function seq(name, t, fps = 10) { const a = ANIM[name]; return a[Math.floor(t * fps) % a.length]; }
+function pickFrame() {
+  if (P.atk) return atkFrame();
+  if (P.recover > 0 && P.recFrame) return P.recFrame;
+  if (P.dash) return seq('dash', time);
+  if (P.wall) return seq('wall', time);
+  if (!P.ground) return seq(P.vy < 0 ? 'jump_up' : 'jump_down', P.airT);
+  if (Math.abs(P.vx) > 40) return ANIM.run[Math.floor(P.gait) % ANIM.run.length];
+  return seq('idle', time, 6);
+}
+// Bóng mờ khi lướt: tô màu đỏ cam một lần rồi giữ lại
+const tintCache = {};
+function tinted(name) {
+  if (tintCache[name]) return tintCache[name];
+  const img = FR[name]; if (!img.complete || !img.naturalWidth) return null;
+  const c = document.createElement('canvas'); c.width = FW; c.height = FH; const g = c.getContext('2d');
+  g.drawImage(img, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = '#ff5a1f'; g.fillRect(0, 0, FW, FH);
+  return (tintCache[name] = c);
+}
+function drawPose(name, alpha) {
+  const fr = FR[name];
+  if (fr && fr.complete && fr.naturalWidth) cx.drawImage(fr, -FA[name], -FH + 2);
   else if (SPR.complete && SPR.naturalWidth) cx.drawImage(SPR, -SPR_W / 2, -SPR_H);
+}
+function drawPlayer(alpha) {
+  const rx = P.ox + (P.x - P.ox) * alpha, ry = P.oy + (P.y - P.oy) * alpha;
+  const sx = Math.round(rx + P.w / 2 - cam.x), sy = Math.round(ry + P.h - cam.y), f = P.face;
+  cx.save(); cx.globalCompositeOperation = 'lighter';
+  for (const g of P.ghosts) {
+    const t = tinted(g.n); if (!t) continue;
+    cx.save(); cx.globalAlpha = g.a * 0.5; cx.translate(Math.round(g.x + P.w / 2 - cam.x), Math.round(g.y + P.h - cam.y)); cx.scale(g.f, 1);
+    cx.drawImage(t, -FA[g.n], -FH + 2); cx.restore();
+  }
+  cx.restore();
+  const name = pickFrame();
+  // nhún khi chạy: 2 lần mỗi chu kỳ bước, kèm nghiêng người theo tốc độ
+  let bob = 0, rot = 0;
+  if (name === ANIM.run[Math.floor(P.gait) % ANIM.run.length] && P.ground && Math.abs(P.vx) > 40) {
+    const ph = P.gait % 1; bob = Math.sin(ph * Math.PI) * T.RUN_BOB; rot = 0.03 + Math.sin(ph * Math.PI * 2) * 0.015;
+  }
+  if (!P.ground && !P.wall && !P.atk && !P.dash) rot = Math.max(-0.07, Math.min(0.09, P.vy / 9000));
+  if (P.dash) rot = 0.03;
+  cx.save();
+  cx.translate(sx, sy - Math.round(bob)); cx.scale(f, 1);
+  if (P.wall) { cx.scale(-1, 1); cx.translate(-6, 0); }
+  cx.rotate(rot);
+  cx.scale(P.sqx, P.sqy);
+  if (P.atk || P.swing.length) { const sp = SWING_AT[P.atkAir ? 'air' : P.combo] || SWING_AT[0]; cx.save(); cx.translate(sp.x, sp.y); drawSwing(); cx.restore(); }
+  drawPose(name);
   cx.restore();
 }
 
@@ -439,7 +498,7 @@ function draw() {
     else { cx.fillRect(X, Y, f.w, f.h); cx.fillStyle = '#ff5a5a'; cx.fillRect(f.dir > 0 ? X + 22 : X + 4, Y + 10, 8, 5); }
     cx.fillStyle = '#000'; cx.fillRect(X, Y - 9, f.w, 4); cx.fillStyle = '#ffcf5a'; cx.fillRect(X, Y - 9, f.w * f.hp / f.maxHp, 4);
   }
-  drawPlayer();
+  drawPlayer(renderAlpha);
   for (const p of parts) { cx.globalAlpha = Math.min(1, p.life * 3); cx.fillStyle = p.c; cx.fillRect(Math.round(p.x - ox), Math.round(p.y - oy), 3, 3); }
   cx.globalAlpha = 1;
   cx.fillStyle = 'rgba(243,230,196,.75)'; cx.font = '12px sans-serif';
@@ -460,7 +519,7 @@ function frame(now) {
   let dt = Math.min(0.05, (now - last) / 1000); last = now; acc += dt;
   pollInput();
   while (acc >= STEP) {
-    acc -= STEP; time += STEP;
+    acc -= STEP; time += STEP; P.ox = P.x; P.oy = P.y;
     if (hitstop > 0) { hitstop -= STEP; continue; }
     updatePlayer(STEP); updateFoes(STEP); updateParts(STEP);
     pressed.jump = pressed.attack = pressed.dash = released.jump = false;
@@ -469,6 +528,7 @@ function frame(now) {
   cam.x += (P.x + P.w / 2 + P.face * 80 - VW / 2 - cam.x) * Math.min(1, dt * 6);
   cam.y += (P.y - VH * (usingTouch ? 0.38 : 0.5) - cam.y) * Math.min(1, dt * 4);
   cam.x = Math.max(0, Math.min(MW * TS - VW, cam.x)); cam.y = Math.max(-80, Math.min(MH * TS - VH + (usingTouch ? 90 : 0), cam.y));
+  renderAlpha = hitstop > 0 ? 1 : acc / STEP;
   draw(); updateHud();
   requestAnimationFrame(frame);
 }

@@ -26,3 +26,7 @@ Engine: Unity, PC + điện thoại.
 ## Thư mục
 
 - `prototype/dieu-khien/` — bản thử điều khiển Xích Long (HTML, vứt đi sau khi thử; không đưa code này vào game thật). Chỉnh cảm giác tay ở khối `T` đầu file.
+  - Hoạt ảnh: mỗi dáng có điểm neo hông riêng (`FA`) nên đổi dáng không bị giật ngang; nhân vật vẽ nội suy giữa các bước vật lý (mượt trên màn 60/90/120Hz); có co giãn khi nhảy, đáp, lướt, quay đầu; nhún theo bước chạy; bóng mờ khi lướt; giữ dáng chém thêm một nhịp khi dứt combo.
+  - Thêm khung mới: bỏ file vào `frames/`, ghi tên vào `ANIM` và điểm neo hông vào `FA`.
+- `tools/cat_khung.py` — cắt tấm hình nhiều dáng nền xanh lá thành các khung 150×110, cùng tỉ lệ, ép về bảng màu chung.
+- `art/characters/xich_long/PROMPT_KHUNG_HINH.md` — prompt vẽ thêm khung chạy, nhảy, lướt, chém.
