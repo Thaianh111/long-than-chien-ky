@@ -1,4 +1,4 @@
-"""Cắt một tấm hình nhiều dáng (nền xanh lá #00FF00) thành các khung pixel 150x110 cho Long Thần Chiến Ký.
+"""Cắt một tấm hình nhiều dáng (nền xanh lá #00FF00, hoặc magenta #FF00FF với --nen hong) thành các khung pixel 150x110 cho Long Thần Chiến Ký.
 
 Cách dùng:
     python3 tools/cat_khung.py <anh_tam.png> <thu_muc_ra> <ten> [--cao 84] [--hang 1] [--cot 8]
@@ -21,6 +21,7 @@ ap.add_argument('--cot', type=int, default=8)
 ap.add_argument('--theo', type=int, default=0, help='lấy chiều cao của khung số K (đứng thẳng, không giơ đao) để tính tỉ lệ; 0 = khung cao nhất')
 ap.add_argument('--tile', type=float, default=0, help='tỉ lệ thu nhỏ đặt thẳng (vd 0.19), bỏ qua --cao/--theo')
 ap.add_argument('--rieng', action='store_true', help='mỗi khung tự đặt chân chạm đáy (dùng cho dáng nhảy ở các độ cao khác nhau)')
+ap.add_argument('--nen', default='xanh', choices=['xanh', 'hong'], help='màu nền tách: xanh = #00FF00, hong = magenta #FF00FF (nhân vật màu xanh như Thanh Vũ)')
 ap.add_argument('--tach', action='store_true', help='tách theo hình dáng (khi các dáng chạm/lấn nhau) thay vì chia lưới đều')
 a = ap.parse_args()
 FW, FH = 150, 110
@@ -30,12 +31,20 @@ REF = os.path.join(here, '..', 'prototype', 'dieu-khien', 'frames')
 def key_green(im):
     arr = np.array(im.convert('RGBA')).astype(int)
     r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
-    green = (g > 140) & (g > r * 1.35) & (g > b * 1.35)
-    green |= (g > 150) & (g >= r + 12) & (g >= b + 12)   # ngôi sao mờ của Gemini và viền xanh nhạt
+    if a.nen == 'hong':
+        green = (r > 140) & (b > 140) & (r > g * 1.6) & (b > g * 1.6)
+        green |= (r > 170) & (b > 170) & (g < r - 40) & (g < b - 40)   # viền hồng nhạt
+    else:
+        green = (g > 140) & (g > r * 1.35) & (g > b * 1.35)
+        green |= (g > 150) & (g >= r + 12) & (g >= b + 12)   # ngôi sao mờ của Gemini và viền xanh nhạt
     arr[..., 3] = np.where(green, 0, 255)
     # bỏ viền xanh lem: kéo kênh G xuống nếu còn ám xanh
-    spill = (g > r) & (g > b) & ~green
-    arr[..., 1] = np.where(spill, np.maximum(r, b), g)
+    if a.nen == 'hong':
+        spill = (r > g + 30) & (b > g + 30) & ~green           # bỏ ám hồng ở viền
+        arr[..., 0] = np.where(spill, np.minimum(r, g + 30), r); arr[..., 2] = np.where(spill, np.minimum(b, g + 60), b)
+    else:
+        spill = (g > r) & (g > b) & ~green
+        arr[..., 1] = np.where(spill, np.maximum(r, b), g)
     return Image.fromarray(arr.astype('uint8'), 'RGBA')
 
 def palette():
