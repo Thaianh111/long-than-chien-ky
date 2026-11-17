@@ -428,7 +428,9 @@ const FA = { as1: 83, as2: 77, as3: 79, as4: 74, as5: 77,
   run1: 68, run2: 75, run3: 75, run4: 72, run5: 68, run6: 75, run7: 76, run8: 73,
   idle: 73, run: 57, jump: 98, dash: 88, windup: 74, slash_thrust: 75, slash_up: 80, x_overhead: 79 };
 // Dịch dọc riêng (px, dương = xuống) cho dáng lộn vòng trên không, để thân người giữ đúng độ cao
-const FY = { as1: 4, as2: -7, as3: -1, as4: -1 };
+const FY = { as1: 4, as2: -7, as3: -1, as4: -1,
+  // giảm nhún của khung chạy (Gemini vẽ khung 2/6 khuỵu sâu, 4/8 bật cao -> nhìn như nhảy cóc)
+  run2: -6, run6: -6, run4: 3, run8: 3 };
 // Tâm vệt chém (vai) so với chân, theo từng nhát
 const SWING_AT = { 0: { x: 6, y: -58 }, 1: { x: 4, y: -60 }, 2: { x: 2, y: -52 }, air: { x: 2, y: -58 } };
 // Thêm khung mới: bỏ file vào frames/ rồi ghi tên vào đây theo thứ tự (vd run: ['run1','run2',...]).
