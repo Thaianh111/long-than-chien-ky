@@ -13,7 +13,7 @@ Use the attached character as the exact reference: same red-and-gold Vietnamese 
 | # | Tấm | Prompt riêng (dán sau phần chung) |
 |---|---|---|
 | 1 | ✅ Chạy, 8 khung (đã có, `sheets/chay_8_khung_gemini.png`) | `8-frame side-view run cycle loop: contact, down, passing, up, contact (other leg), down, passing, up. Saber held low behind, coat tails flowing back. Smooth, evenly spaced motion.` |
-| 2 | Nhảy, 5 khung | `5 frames: crouch before jump, rising (legs tucked), apex, falling (legs reaching down), landing crouch.` |
+| 2 | ✅ Nhảy, 5 khung (đã có, `sheets/nhay_5_khung_gemini.png`) | `5 frames: crouch before jump, rising (legs tucked), apex, falling (legs reaching down), landing crouch.` |
 | 3 | Lướt, 3 khung | `3 frames of a ground dash: push-off lean, full forward dash low to the ground with coat streaming back, braking stop with heels skidding.` |
 | 4 | Chém nhát 1, 5 khung | `5-frame downward diagonal saber slash: anticipation (saber raised behind head), start of swing, mid-swing with motion smear, saber low in front, recovery.` |
 | 5 | Chém nhát 2, 5 khung | `5-frame upward saber slash: saber low in front, start rising, mid-swing with motion smear, saber high above head, recovery.` |

@@ -18,6 +18,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('sheet'); ap.add_argument('outdir'); ap.add_argument('name')
 ap.add_argument('--cao', type=int, default=84); ap.add_argument('--hang', type=int, default=1)
 ap.add_argument('--cot', type=int, default=8)
+ap.add_argument('--rieng', action='store_true', help='mỗi khung tự đặt chân chạm đáy (dùng cho dáng nhảy ở các độ cao khác nhau)')
 ap.add_argument('--tach', action='store_true', help='tách theo hình dáng (khi các dáng chạm/lấn nhau) thay vì chia lưới đều')
 a = ap.parse_args()
 FW, FH = 150, 110
@@ -93,7 +94,7 @@ os.makedirs(a.outdir, exist_ok=True)
 outs = []
 for k, (c, bb) in enumerate(cells, 1):
     x0, x1 = bb[0], bb[2]
-    part = c.crop((x0, 0, x1, ground))
+    part = c.crop((x0, bb[1] if a.rieng else 0, x1, bb[3] if a.rieng else ground))
     nw, nh = max(1, round(part.width * scale)), max(1, round(part.height * scale))
     small = part.resize((nw, nh), Image.LANCZOS)
     alpha = small.getchannel('A').point(lambda v: 255 if v > 110 else 0)
