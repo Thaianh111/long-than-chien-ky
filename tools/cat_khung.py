@@ -66,7 +66,7 @@ if a.tach:
     # rồi gán mỗi điểm ảnh về hạt gần nhất -> mỗi dáng một hình riêng
     from scipy import ndimage
     arr = np.array(sheet); m = arr[..., 3] > 128
-    for it in range(2, 9):
+    for it in range(2, 30):
         er = ndimage.binary_erosion(m, iterations=it)
         lab, n = ndimage.label(er, structure=np.ones((3, 3)))
         sizes = ndimage.sum(er, lab, range(1, n + 1))
