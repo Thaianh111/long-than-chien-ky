@@ -83,3 +83,25 @@ Teleport-in and victory pose, 3 frames: 1 landing in a low crouch with one hand 
 - Thân người vẫn thẳng quá thì đổi "40 degrees" thành "50 degrees".
 - Các khung lệch cỡ nhau thì thêm câu: `keep exactly the same pixel size as the reference image`.
 - Làm xong gửi em **tấm sprite sheet PNG** (hoặc GIF). Em sẽ cắt khung, canh chân rồi thay vào game Unity và bản web.
+
+---
+
+## Animate Studio (làm video rồi cắt khung) — prompt chuyển động + số giây
+Cài đặt: Imagine 1.5 (thử) / Kling 3.0 (bản đẹp) · 720p · Chroma Key, Cloud · Frames Every 2 · Size 512 · CLIPS 1.
+Trước khi làm: CALIBRATE CANVAS cho nhân vật cao khoảng 55–60% khung, đặt giữa, chân cách đáy khoảng 10%.
+Mọi prompt đều kết thúc bằng câu khóa camera:
+`Camera fixed, side view, character stays centered in place, same size, green background unchanged, no other objects.`
+
+| # | Động tác | Giây | Prompt |
+|---|---|---|---|
+| 1 | Đứng thở | 2s | Character stands in a ready stance facing right, katana held low, breathing slowly, chest rises and falls, sash sways gently, blade edge glows softly. Loopable. |
+| 2 | Chạy ninja | 2s | Character runs to the right in place, low ninja sprint like Zero: torso leaning forward 40 degrees, head low, knees deeply bent, long fast strides, katana held reversed pointing backward along the arm, left arm swinging behind, sash streaming straight back. Even rhythm, legs clearly alternate, no limping. Loopable. |
+| 3 | Nhảy | 2s | Character crouches, jumps straight up high with knees tucked and katana held back, reaches the top, falls back down with legs extending, lands in a crouch absorbing impact, returns to ready stance. |
+| 4 | Lướt | 1.5s | Character bursts into a ground dash to the right in place: explosive push-off, body almost horizontal and very low, katana held back, sash stretched straight behind, then brakes hard sliding on the heel and leans back. |
+| 5 | Chém nhát 1 | 2s | Character pulls the katana back then performs one fast horizontal slash forward at chest height, leaving a wide glowing orange half-moon trail, follows through and returns to ready stance. |
+| 6 | Chém nhát 2 | 2s | Character steps forward and swings the katana from low behind up to high overhead in one rising slash, leaving a big glowing orange crescent arc, then returns to ready stance. |
+| 7 | Chém nhát 3 | 2s | Character raises the katana high with both hands, leaps forward slightly and slashes straight down with full power, a huge glowing orange half-moon trail, blade stops at ground level with sparks, holds a low crouch, then stands. |
+| 8 | Chém xoay trên không | 2s | Character jumps into the air and spins forward like a wheel twice, katana extended outward drawing a full glowing orange circle around the body, sash wrapping with the spin, then lands. |
+| 9 | Bám + đạp tường | 2s | An invisible wall is on the right. Character clings to it with hand and foot, slides down slowly with sparks at the foot, then crouches and kicks off the wall, leaping away to the left. Do not draw the wall. |
+| 10 | Trúng đòn | 1.5s | Character gets hit from the front: recoils backward, head snaps back, arms flung out, armor flashes white, staggers with one knee bending, then recovers to ready stance. |
+| 11 | Xuất hiện / chiến thắng | 2s | Character lands from above into a low crouch with one hand on the ground, rises up, swings the katana once to the side and stands proud, sash flowing. |
