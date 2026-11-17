@@ -138,7 +138,7 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -254,7 +254,7 @@ function updateAnim(dt) {
   if (P.face !== P.lastFace) { if (P.ground && !P.atk) { P.turnT = 0.08; squash(0.7, 1.04); } P.lastFace = P.face; }
   P.turnT = Math.max(0, P.turnT - dt);
   // vừa dứt lướt trên đất mà không bấm hướng -> trượt gót thắng lại
-  if (P.wasDash && !P.dash && P.ground && !P.atk && !held.left && !held.right) { P.recFrame = ANIM.dash_stop[0]; P.recover = T.DASH_STOP; }
+  if (P.wasDash && !P.dash && P.ground && !P.atk && !held.left && !held.right) { P.recFrame = HERO === 'tv' ? 'tv_d3' : ANIM.dash_stop[0]; P.recover = T.DASH_STOP; }
   P.wasDash = !!P.dash;
   P.recover = Math.max(0, P.recover - dt);
   P.wjT = Math.max(0, (P.wjT || 0) - dt); if (P.ground || P.wall || P.atk || P.dash) P.wjT = 0;
@@ -616,6 +616,7 @@ function drawSwing() {
 const FA = { tv_mau: 73, tv_b1: 73, tv_b2: 74, tv_b3: 74, tv_b4: 75, tv_i1: 75, tv_i2: 77, tv_i3: 77, tv_i4: 75,
   tv_r1: 80, tv_r2: 79, tv_r3: 77, tv_r4: 76,
   tv_j1: 73, tv_j2: 71, tv_j3: 68, tv_j4: 72, tv_j5: 74,
+  tv_d1: 84, tv_d2: 82, tv_d3: 72,   // lướt: neo theo hông
   tv_aj1: 71, tv_aj2: 69, tv_aj3: 67, tv_aj4: 72, tv_aj5: 74,   // nhảy bắn: khớp chân với khung nhảy
   tv_rb1: 77, tv_rb2: 77, tv_rb3: 77, tv_rb4: 75,   // chạy bắn: neo theo đầu nỏ cho nỏ không rung   // chạy: neo giữa ngực (màu giáp xanh)
   as1: 83, as2: 77, as3: 79, as4: 74, as5: 77,
@@ -665,6 +666,8 @@ function atkFrame(endPose) {
 function seq(name, t, fps = 10) { const a = ANIM[name]; return a[Math.floor(t * fps) % a.length]; }
 function pickFrame() {
   if (HERO === 'tv') {
+    if (P.dash && !P.aiming && !P.shootT) return P.ground && P.dashHeld < T.DASH_PUSH ? 'tv_d1' : 'tv_d2';
+    if (P.recover > 0 && P.recFrame === 'tv_d3' && !P.aiming) return 'tv_d3';
     if (!P.ground && !P.wall) {
       const sh = P.aiming || P.shootT > 0 ? 'tv_aj' : 'tv_j';
       if (P.vy < 0 && P.airT < T.TAKEOFF_TIME && !P.aiming) return 'tv_j1';
@@ -696,7 +699,7 @@ function tinted(name) {
   if (tintCache[name]) return tintCache[name];
   const img = FR[name]; if (!img.complete || !img.naturalWidth) return null;
   const c = document.createElement('canvas'); c.width = FW; c.height = FH; const g = c.getContext('2d');
-  g.drawImage(img, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = '#ff5a1f'; g.fillRect(0, 0, FW, FH);
+  g.drawImage(img, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = name.startsWith('tv_') ? '#2fc8ff' : '#ff5a1f'; g.fillRect(0, 0, FW, FH);   // bóng lướt: Xích Long đỏ cam, Thanh Vũ xanh băng
   return (tintCache[name] = c);
 }
 function drawPose(name, alpha) {
@@ -720,7 +723,6 @@ function drawPlayer(alpha) {
   if (name === ANIM.run[Math.floor(P.gait) % ANIM.run.length] && P.ground && Math.abs(P.vx) > 40) {
     const ph = (P.gait % 4) / 4; bob = Math.sin(ph * Math.PI) * T.RUN_BOB; rot = 0.02;
   }
-  if (HERO === 'tv' && P.dash) rot = 0.12;
   if (!P.ground && !P.wall && !P.atk && !P.dash) rot = Math.max(-0.03, Math.min(0.04, P.vy / 20000));
   if (P.dash) rot = 0;
   cx.save();
