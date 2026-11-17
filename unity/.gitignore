@@ -1,0 +1,20 @@
+# Unity tự tạo lại
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+*.csproj
+*.sln
+*.unityproj
+.vs/
+.idea/
+# công cụ kiểm tra .NET ngoài Unity
+/Tools/CoreCheck/bin/
+/Tools/CoreCheck/obj/
+!/Tools/CoreCheck/CoreCheck.csproj
+/Tools/UnityStubCheck/bin/
+/Tools/UnityStubCheck/obj/
+!/Tools/UnityStubCheck/UnityStubCheck.csproj

@@ -1,0 +1,18 @@
+name: unity-core-ci
+on:
+  push:
+    branches: [main]
+    paths: ['unity/Assets/Scripts/**', 'unity/Assets/Tests/**', 'unity/Assets/Resources/Data/**', 'unity/Tools/**']
+  pull_request:
+    paths: ['unity/**']
+jobs:
+  core-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - name: Test luật chơi (ngoài Unity)
+        run: cd unity/Tools/CoreCheck && dotnet run
+      - name: Biên dịch thử phần Unity (lớp UnityEngine giả)
+        run: cd unity/Tools/UnityStubCheck && dotnet build

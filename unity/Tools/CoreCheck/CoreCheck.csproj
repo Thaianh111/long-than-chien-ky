@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Kiểm tra code logic (Assets/Scripts/Core) và chạy test EditMode NGOÀI Unity bằng .NET.
+       Unity dùng NUnit thật; ở đây NUnitShim.cs giả lập vài hàm NUnit để chạy được không cần NuGet. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Assets/Scripts/Core/**/*.cs" />
+    <Compile Include="../../Assets/Tests/EditMode/**/*.cs" />
+    <Compile Include="NUnitShim.cs" />
+    <Compile Include="Runner.cs" />
+    <Compile Include="XCheck.cs" />
+  </ItemGroup>
+</Project>
