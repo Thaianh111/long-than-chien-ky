@@ -138,7 +138,7 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3','tv_w1','tv_w2','tv_w3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -328,6 +328,7 @@ function updatePlayer(dt) {
   if (!P.ground && !P.dash) {
     if (dirIn && touchingWall(dirIn) && P.vy > -120) P.wall = dirIn;
   }
+  if (HERO === 'tv' && P.wall) P.face = -P.wall;   // Thanh Vũ quay lưng vào tường để bắn ra ngoài
 
   // --- nhảy ---
   if (P.jumpBuf > 0) {
@@ -616,6 +617,7 @@ function drawSwing() {
 const FA = { tv_mau: 73, tv_b1: 73, tv_b2: 74, tv_b3: 74, tv_b4: 75, tv_i1: 75, tv_i2: 77, tv_i3: 77, tv_i4: 75,
   tv_r1: 80, tv_r2: 79, tv_r3: 77, tv_r4: 76,
   tv_j1: 73, tv_j2: 71, tv_j3: 68, tv_j4: 72, tv_j5: 74,
+  tv_w1: 63, tv_w2: 56, tv_w3: 74,   // bám tường: neo theo chỗ lưng/chân chạm tường (tường bên trái hình)
   tv_d1: 84, tv_d2: 82, tv_d3: 72,   // lướt: neo theo hông
   tv_aj1: 71, tv_aj2: 69, tv_aj3: 67, tv_aj4: 72, tv_aj5: 74,   // nhảy bắn: khớp chân với khung nhảy
   tv_rb1: 77, tv_rb2: 77, tv_rb3: 77, tv_rb4: 75,   // chạy bắn: neo theo đầu nỏ cho nỏ không rung   // chạy: neo giữa ngực (màu giáp xanh)
@@ -637,7 +639,7 @@ const FY = { as1: 4, as2: -7, as3: -1, as4: -1,
   run2: -4, run6: -4, run4: 2, run8: 2, run7: -1,
   tv_r3: 3, tv_r4: 6, tv_aj2: -1, tv_aj3: -5 };
 // Đầu nỏ (so với chân, hướng phải) theo từng dáng bắn
-const MZ = { tv_aj2: { x: 35, y: -45 }, tv_aj3: { x: 37, y: -53 }, tv_aj4: { x: 34, y: -59 } };   // Thanh Vũ chạy: khung bay lên cao quá, hạ bớt cho đỡ nhảy cóc
+const MZ = { tv_w2: { x: 48, y: -52 }, tv_aj2: { x: 35, y: -45 }, tv_aj3: { x: 37, y: -53 }, tv_aj4: { x: 34, y: -59 } };   // Thanh Vũ chạy: khung bay lên cao quá, hạ bớt cho đỡ nhảy cóc
 // Tâm vệt chém (vai) so với chân, theo từng nhát
 const SWING_AT = { 0: { x: 6, y: -58 }, 1: { x: 4, y: -60 }, 2: { x: 2, y: -52 }, air: { x: 2, y: -58 } };
 // Thêm khung mới: bỏ file vào frames/ rồi ghi tên vào đây theo thứ tự (vd run: ['run1','run2',...]).
@@ -666,6 +668,8 @@ function atkFrame(endPose) {
 function seq(name, t, fps = 10) { const a = ANIM[name]; return a[Math.floor(t * fps) % a.length]; }
 function pickFrame() {
   if (HERO === 'tv') {
+    if (P.wall) return P.aiming || P.shootT > 0 ? 'tv_w2' : 'tv_w1';
+    if (P.wjT > 0 && !P.aiming && !P.shootT) return 'tv_w3';
     if (P.dash && !P.aiming && !P.shootT) return P.ground && P.dashHeld < T.DASH_PUSH ? 'tv_d1' : 'tv_d2';
     if (P.recover > 0 && P.recFrame === 'tv_d3' && !P.aiming) return 'tv_d3';
     if (!P.ground && !P.wall) {

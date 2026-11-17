@@ -27,4 +27,4 @@ Original character design for a side-scrolling action game: THANH VU, a young Vi
 | 4 | ✅ Chạy vừa bắn, 4 khung (`sheets/chay_ban_4_khung_gemini.png`) | |
 | 5 | ✅ Nhảy 5 khung (`sheets/nhay_5_khung_gemini.png`) + bắn trên không 5 khung (`sheets/nhay_ban_5_khung_gemini.png`) | |
 | 6 | ✅ Lướt 3 khung (`sheets/luot_3_khung_gemini.png`) | |
-| 7 | Bám tường + đạp tường + bắn khi bám | |
+| 7 | ✅ Bám tường + bắn khi bám + đạp tường, 3 khung (`sheets/bam_tuong_3_khung_gemini.png`), quay lưng vào tường | |
