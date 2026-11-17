@@ -184,7 +184,7 @@ namespace LongThan.Game
             GUI.Box(new Rect(0, 0, VW, Cfg.VH), "");
             GUI.Label(new Rect(0, 40, VW, 30), "LONG THẦN CHIẾN KÝ", bigStyle);
             GUI.Label(new Rect(VW / 2 - 60, 74, 120, 20), "Chọn nhân vật", talkStyle);
-            var xl = new GUIContent("XÍCH LONG\nKiếm sĩ · đao laze", view.Frame("id1"));
+            var xl = new GUIContent("XÍCH LONG\nKiếm sĩ · đao laze", view.Frame("xl_id1"));
             var tvc = new GUIContent("THANH VŨ\nXạ thủ · Thần Nỏ", view.Frame("tv_mau"));
             if (GUI.Button(new Rect(VW / 2 - 170, 110, 160, 150), xl, btnStyle)) StartAs(Hero.XichLong);
             if (GUI.Button(new Rect(VW / 2 + 10, 110, 160, 150), tvc, btnStyle)) StartAs(Hero.ThanhVu);

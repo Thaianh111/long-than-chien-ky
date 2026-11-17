@@ -54,7 +54,7 @@ namespace LongThan.Core
             if (P.face != P.lastFace) { if (P.ground && P.atk == null) { P.turnT = 0.08f; Squash(P, 0.7f, 1.04f); } P.lastFace = P.face; }
             P.turnT = Math.Max(0, P.turnT - dt);
             // vừa dứt lướt trên đất mà không bấm hướng -> trượt gót thắng lại
-            if (P.wasDash && P.dash <= 0 && P.ground && P.atk == null && !g.input.Held(Left) && !g.input.Held(Right)) { P.recFrame = g.hero == Hero.ThanhVu ? "tv_d3" : "dash3"; P.recover = T.DASH_STOP; }
+            if (P.wasDash && P.dash <= 0 && P.ground && P.atk == null && !g.input.Held(Left) && !g.input.Held(Right)) { P.recFrame = g.hero == Hero.ThanhVu ? "tv_d3" : "xl_dash3"; P.recover = T.DASH_STOP; }
             P.wasDash = P.dash > 0;
             P.recover = Math.Max(0, P.recover - dt);
             P.wjT = Math.Max(0, P.wjT - dt); if (P.ground || P.wall != 0 || P.atk != null || P.dash > 0) P.wjT = 0;

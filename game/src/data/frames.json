@@ -33,69 +33,52 @@
   "tv_rb2": 77,
   "tv_rb3": 77,
   "tv_rb4": 75,
-  "as1": 83,
-  "as2": 77,
-  "as3": 79,
-  "as4": 74,
-  "as5": 77,
-  "id1": 72,
-  "id2": 69,
-  "id3": 70,
-  "id4": 69,
-  "w1": 83,
-  "w2": 76,
-  "w3": 76,
-  "s3_1": 81,
-  "s3_2": 86,
-  "s3_3": 77,
-  "s3_4": 74,
-  "s3_5": 75,
-  "s3_6": 78,
-  "s2_1": 72,
-  "s2_2": 75,
-  "s2_3": 77,
-  "s2_4": 83,
-  "s2_5": 85,
-  "s1_1": 78,
-  "s1_2": 77,
-  "s1_3": 76,
-  "s1_4": 71,
-  "s1_5": 79,
-  "dash1": 75,
-  "dash2": 67,
-  "dash3": 70,
-  "jump1": 76,
-  "jump2": 80,
-  "jump3": 71,
-  "jump4": 74,
-  "jump5": 74,
-  "run1": 71,
-  "run2": 75,
-  "run3": 76,
-  "run4": 75,
-  "run5": 70,
-  "run6": 75,
-  "run7": 75,
-  "run8": 75,
-  "idle": 73,
-  "run": 57,
-  "jump": 98,
-  "dash": 88,
-  "windup": 74,
-  "slash_thrust": 75,
-  "slash_up": 80,
-  "x_overhead": 79
+  "xl_as1": 75,
+  "xl_as2": 75,
+  "xl_as3": 75,
+  "xl_as4": 75,
+  "xl_as5": 75,
+  "xl_dash1": 75,
+  "xl_dash2": 75,
+  "xl_dash3": 75,
+  "xl_id1": 75,
+  "xl_id2": 75,
+  "xl_id3": 75,
+  "xl_id4": 75,
+  "xl_jump1": 75,
+  "xl_jump2": 75,
+  "xl_jump3": 75,
+  "xl_jump4": 75,
+  "xl_jump5": 75,
+  "xl_run1": 75,
+  "xl_run2": 75,
+  "xl_run3": 75,
+  "xl_run4": 75,
+  "xl_run5": 75,
+  "xl_run6": 75,
+  "xl_run7": 75,
+  "xl_run8": 75,
+  "xl_s1_1": 75,
+  "xl_s1_2": 75,
+  "xl_s1_3": 75,
+  "xl_s1_4": 75,
+  "xl_s1_5": 75,
+  "xl_s2_1": 75,
+  "xl_s2_2": 75,
+  "xl_s2_3": 75,
+  "xl_s2_4": 75,
+  "xl_s2_5": 75,
+  "xl_s3_1": 75,
+  "xl_s3_2": 75,
+  "xl_s3_3": 75,
+  "xl_s3_4": 75,
+  "xl_s3_5": 75,
+  "xl_s3_6": 75,
+  "xl_w1": 75,
+  "xl_w2": 75,
+  "xl_w3": 75
  },
  "FY": {
-  "as1": 4,
-  "as2": -7,
-  "as3": -1,
-  "as4": -1,
-  "run2": -4,
-  "run6": -4,
-  "run4": 2,
-  "run8": 2,
-  "run7": -1,
   "tv_r3": 3,
   "tv_r4": 6,
   "tv_aj2": -1,
@@ -159,113 +142,113 @@
    "tv_i2"
   ],
   "idle": [
-   "id1",
-   "id2",
-   "id3",
-   "id4",
-   "id3",
-   "id2"
+   "xl_id1",
+   "xl_id2",
+   "xl_id3",
+   "xl_id4",
+   "xl_id3",
+   "xl_id2"
   ],
   "run": [
-   "run1",
-   "run2",
-   "run3",
-   "run4",
-   "run5",
-   "run6",
-   "run7",
-   "run8"
+   "xl_run1",
+   "xl_run2",
+   "xl_run3",
+   "xl_run4",
+   "xl_run5",
+   "xl_run6",
+   "xl_run7",
+   "xl_run8"
   ],
   "takeoff": [
-   "jump1"
+   "xl_jump1"
   ],
   "jump_up": [
-   "jump2"
+   "xl_jump2"
   ],
   "apex": [
-   "jump3"
+   "xl_jump3"
   ],
   "jump_down": [
-   "jump4"
+   "xl_jump4"
   ],
   "land": [
-   "jump5"
+   "xl_jump5"
   ],
   "wall": [
-   "w1"
+   "xl_w1"
   ],
   "wall_kick": [
-   "w2"
+   "xl_w2"
   ],
   "wall_jump": [
-   "w3"
+   "xl_w3"
   ],
   "dash": [
-   "dash2"
+   "xl_dash2"
   ],
   "dash_start": [
-   "dash1"
+   "xl_dash1"
   ],
   "dash_stop": [
-   "dash3"
+   "xl_dash3"
   ]
  },
  "ATKF": {
   "0": {
    "pre": [
-    "s1_1"
+    "xl_s1_1"
    ],
    "act": [
-    "s1_2",
-    "s1_3"
+    "xl_s1_2",
+    "xl_s1_3"
    ],
    "post": [
-    "s1_4"
+    "xl_s1_4"
    ],
-   "rec": "s1_5"
+   "rec": "xl_s1_5"
   },
   "1": {
    "pre": [
-    "s2_1"
+    "xl_s2_1"
    ],
    "act": [
-    "s2_2",
-    "s2_3"
+    "xl_s2_2",
+    "xl_s2_3"
    ],
    "post": [
-    "s2_4"
+    "xl_s2_4"
    ],
-   "rec": "s2_5"
+   "rec": "xl_s2_5"
   },
   "2": {
    "pre": [
-    "s3_1",
-    "s3_2"
+    "xl_s3_1",
+    "xl_s3_2"
    ],
    "act": [
-    "s3_3",
-    "s3_4"
+    "xl_s3_3",
+    "xl_s3_4"
    ],
    "post": [
-    "s3_5"
+    "xl_s3_5"
    ],
-   "rec": "s3_6"
+   "rec": "xl_s3_6"
   },
   "air": {
    "pre": [
-    "as1"
+    "xl_as1"
    ],
    "act": [
-    "as2",
-    "as3",
-    "as2",
-    "as3"
+    "xl_as2",
+    "xl_as3",
+    "xl_as2",
+    "xl_as3"
    ],
    "post": [
-    "as4",
-    "as5"
+    "xl_as4",
+    "xl_as5"
    ],
-   "rec": "as5"
+   "rec": "xl_as5"
   }
  },
  "BTA": {

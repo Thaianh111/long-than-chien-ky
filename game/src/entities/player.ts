@@ -48,7 +48,7 @@ function updateAnim(g: Game, dt: number): void {
   if (P.face !== P.lastFace) { if (P.ground && !P.atk) { P.turnT = 0.08; squash(P, 0.7, 1.04); } P.lastFace = P.face; }
   P.turnT = Math.max(0, P.turnT - dt);
   // vừa dứt lướt trên đất mà không bấm hướng -> trượt gót thắng lại
-  if (P.wasDash && !P.dash && P.ground && !P.atk && !g.input.held.left && !g.input.held.right) { P.recFrame = g.hero === 'tv' ? 'tv_d3' : 'dash3'; P.recover = T.DASH_STOP; }
+  if (P.wasDash && !P.dash && P.ground && !P.atk && !g.input.held.left && !g.input.held.right) { P.recFrame = g.hero === 'tv' ? 'tv_d3' : 'xl_dash3'; P.recover = T.DASH_STOP; }
   P.wasDash = !!P.dash;
   P.recover = Math.max(0, P.recover - dt);
   P.wjT = Math.max(0, P.wjT - dt); if (P.ground || P.wall || P.atk || P.dash) P.wjT = 0;
