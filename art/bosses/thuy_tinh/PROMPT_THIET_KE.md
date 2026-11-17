@@ -19,11 +19,11 @@ Mỗi tấm: cùng nhân vật y hệt hình mẫu, quay mặt sang TRÁI, xếp
 
 | # | Tấm | Prompt ngắn (thêm vào đầu, giữ nguyên dòng style ở trên) |
 |---|---|---|
-| 1 | Đứng thở 4 khung | `4-frame idle breathing animation sprite sheet of the attached character, trident upright, hair flowing, chest core pulsing` |
-| 2 | Lao đinh ba 4 khung | `4-frame attack sprite sheet: crouch back with trident (wind-up), lunge forward, full thrust with trident pointing LEFT, recover` |
-| 3 | Gọi sóng 4 khung | `4-frame spell sprite sheet: raise trident high over head, glow, slam trident butt down to the ground, hold pose` |
-| 4 | Nhảy cao 3 khung | `3-frame jump sprite sheet: crouch, leap upward with trident held overhead, fall pose pointing trident down` |
-| 5 | Bị đánh + gầm 2 khung | `2-frame sprite sheet: recoil hurt pose, then roaring with arms wide and purple cracks glowing brighter` |
-| 6 | Gục ngã 3 khung | `3-frame defeat sprite sheet: staggering, kneeling with trident stuck in the ground, collapsing with armor cracking purple light` |
+| 1 | ✅ Đứng thở 4 khung | `4-frame idle breathing animation sprite sheet of the attached character, trident upright, hair flowing, chest core pulsing` |
+| 2 | ✅ Lao đinh ba 4 khung | `4-frame attack sprite sheet: crouch back with trident (wind-up), lunge forward, full thrust with trident pointing LEFT, recover` |
+| 3 | ✅ Gọi sóng 4 khung | `4-frame spell sprite sheet: raise trident high over head, glow, slam trident butt down to the ground, hold pose` |
+| 4 | ✅ Nhảy cao 3 khung | `3-frame jump sprite sheet: crouch, leap upward with trident held overhead, fall pose pointing trident down` |
+| 5 | ✅ Bị đánh + gầm 2 khung | `2-frame sprite sheet: recoil hurt pose, then roaring with arms wide and purple cracks glowing brighter` |
+| 6 | ✅ Gục ngã 3 khung | `3-frame defeat sprite sheet: staggering, kneeling with trident stuck in the ground, collapsing with armor cracking purple light` |
 
 Hiệu ứng nước (sóng, bong bóng, mưa giáo nước) em vẽ bằng code nên anh không cần vẽ.

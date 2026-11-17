@@ -144,7 +144,7 @@ const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
 const BG = {}; ['skyline-a','buildings-bg','near-buildings-bg'].forEach(n => { BG[n] = new Image(); BG[n].src = 'bg/' + n + '.png'; });
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3','tv_w1','tv_w2','tv_w3','en_drone1','en_drone2','en_drone3','en_drone4','en_turret1','en_turret2','en_turret3','en_turret4','en_turret5','en_turret6','fx_boom1','fx_boom2','fx_boom3','fx_boom4','fx_boom5','fx_boom6','fx_shot1','fx_shot2','fx_shot3','fx_shothit1','fx_shothit2','fx_shothit3','bt_i1','bt_i2','bt_i3','bt_i4'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5','tv_aj1','tv_aj2','tv_aj3','tv_aj4','tv_aj5','tv_d1','tv_d2','tv_d3','tv_w1','tv_w2','tv_w3','en_drone1','en_drone2','en_drone3','en_drone4','en_turret1','en_turret2','en_turret3','en_turret4','en_turret5','en_turret6','fx_boom1','fx_boom2','fx_boom3','fx_boom4','fx_boom5','fx_boom6','fx_shot1','fx_shot2','fx_shot3','fx_shothit1','fx_shothit2','fx_shothit3','bt_i1','bt_i2','bt_i3','bt_i4','bt_dash1','bt_dash2','bt_dash3','bt_dash4','bt_cast1','bt_cast2','bt_cast3','bt_cast4','bt_hurt1','bt_hurt2','bt_die1','bt_die2','bt_die3','bt_jump1','bt_jump2','bt_jump3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -1117,7 +1117,7 @@ function updateBoss(dt) {
     return;
   }
   B.t += dt; B.inv = Math.max(0, B.inv - dt); B.flash = Math.max(0, B.flash - dt); B.floodCd -= dt;
-  if (B.st === 'intro') { if (B.t > 2.8) { B.st = 'idle'; B.t = 0; } }
+  if (B.st === 'intro') { const yy = fl - 340 + Math.min(1, B.t / 0.55) ** 2 * 340; if (B.y < fl - 2 && yy >= fl) { shake = 10; sfxLand(); sparks(B.x, fl - 4, 24, '#8ff0ff'); } B.y = Math.min(fl, yy); if (B.t > 2.8) { B.st = 'idle'; B.t = 0; } }
   else if (B.st === 'shift') {
     arenaWater = Math.min(BT.WATER_P2, Math.max(arenaWater, (B.t - 0.8) / 1.5 * BT.WATER_P2));
     if (B.t > BT.SHIFT) { B.st = 'idle'; B.t = 0; B.anim = 'idle'; }
@@ -1131,7 +1131,7 @@ function updateBoss(dt) {
   } else if (B.st === 'atk') atkStep(dt, pcx, A, fl);
   else if (B.st === 'dead') {
     arenaWater = Math.max(0, arenaWater - 40 * dt); arenaHaz = 0;
-    if (Math.random() < 0.3 && B.t < 2) { const ex = B.x + (Math.random() - 0.5) * 60, ey = B.y - Math.random() * 110; fx.push({ k: 'boom', x: ex, y: ey, life: 0.42, max: 0.42 }); shake = 4; }
+    if (Math.random() < 0.05 && B.t < 2) { const ex = B.x + (Math.random() - 0.5) * 60, ey = B.y - Math.random() * 110; fx.push({ k: 'boom', x: ex, y: ey, life: 0.42, max: 0.42 }); shake = 4; }
   }
   // va chạm thân
   if (B.st !== 'dead' && B.st !== 'intro' && Math.abs(pcx - B.x) < B.w / 2 + P.w / 2 - 4 && P.y + P.h > B.y - B.h && P.y < B.y) hurtPlayer(BT.TOUCH, B.x);
@@ -1277,33 +1277,45 @@ function drawWater(ox, oy) {
     for (let X = X0; X < X1; X += 4) { const wy = y - oy + Math.sin((X + ox) * 0.05 + time * 4) * 2.5; cx.fillRect(X, wy, 4, 2); }
   }
 }
+const BTA = {"bt_dash1":[67,176],"bt_dash2":[106,154],"bt_dash3":[149,154],"bt_dash4":[71,187],"bt_cast1":[101,177],"bt_cast2":[127,180],"bt_cast3":[130,180],"bt_cast4":[133,180],"bt_hurt1":[96,183],"bt_hurt2":[106,187],"bt_die1":[92,177],"bt_die2":[85,177],"bt_die3":[89,173],"bt_jump1":[76,130],"bt_jump2":[73,187],"bt_jump3":[70,176],"bt_i1":[60,148],"bt_i2":[60,148],"bt_i3":[60,148],"bt_i4":[60,148]};
+/* chọn khung hình trùm theo trạng thái */
+function bossPose() {
+  const st = B.st, m = B.move, sg = B.stage, t = B.t, idle = 'bt_i' + (1 + Math.floor(time / 0.45) % 4);
+  if (st === 'intro') return B.y < bossFloor() - 2 ? 'bt_jump3' : t < 0.9 ? 'bt_jump1' : idle;
+  if (st === 'shift') return t < 0.3 ? 'bt_hurt1' : 'bt_hurt2';
+  if (st === 'stun') return 'bt_hurt1';
+  if (st === 'dead') return t < 0.7 ? 'bt_die1' : t < 1.4 ? 'bt_die2' : 'bt_die3';
+  if (st === 'atk') {
+    if (m === 'dash') return sg === 'W' ? 'bt_dash1' : sg === 'A' ? (Math.floor(time * 12) % 2 ? 'bt_dash2' : 'bt_dash3') : t < 0.8 ? 'bt_dash3' : 'bt_dash4';
+    if (m === 'wave') return sg === 'W' ? (t < 0.25 ? 'bt_cast1' : 'bt_cast2') : sg === 'A' || t < 0.35 ? 'bt_cast3' : 'bt_cast4';
+    if (m === 'spears') return sg === 'W' ? 'bt_cast2' : 'bt_cast3';
+    if (m === 'shield') return sg === 'W' ? 'bt_cast1' : 'bt_cast4';
+    if (m === 'bubbles') return sg === 'W' ? 'bt_cast1' : 'bt_dash4';
+    if (m === 'flood') return sg === 'R' ? (B.y < bossFloor() - 2 ? 'bt_jump3' : 'bt_jump1') : sg === 'W' ? 'bt_jump2' : 'bt_cast2';
+  }
+  if (B.flash > 0.05) return 'bt_hurt1';
+  return idle;
+}
 function drawBoss(ox, oy) {
-  if (typeof BOSS_ARENA === 'undefined' || B.st === 'wait' && P.x < BOSS_ARENA.x0 - 700) return;
+  if (typeof BOSS_ARENA === 'undefined' || B.st === 'wait') return;
   if (B.st === 'dead' && B.t > 2.2) return;
   const X = Math.round(B.x - ox), Y = Math.round(B.y - oy), f = B.face, sh = B.st === 'atk' && B.stage === 'W' ? Math.sin(time * 60) * 1.5 : 0;
   // báo hiệu mưa giáo: vòng gợn trên sàn
   if (B.st === 'atk' && B.move === 'spears' && B.stage === 'W') for (const x of B.spots) { cx.strokeStyle = '#8ff0ff'; cx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 20); cx.beginPath(); cx.ellipse(x - ox, bossFloor() - oy - 2, 18, 4, 0, 0, 6.283); cx.stroke(); cx.globalAlpha = 1; }
   if (B.st === 'atk' && B.move === 'dash' && B.stage === 'W') { cx.fillStyle = 'rgba(143,240,255,.5)'; cx.fillRect(f > 0 ? X : X - 600, Y - 3, 600, 2); }
-  const spr = FR['bt_i' + (1 + Math.floor(time / 0.45) % 4)];
+  const pose = bossPose(), spr = FR[pose], an = BTA[pose] || [60, 148];
   if (spr && spr.complete && spr.width) {
-    // hình Gemini: quay mặt TRÁI, chân ở hàng 148, tâm thân x≈60
-    const k = B.anim; let rot = 0, sx = 1, sy = 1, dx = 0;
-    if (k === 'thrust' && B.stage === 'W') { rot = 0.08; dx = 6; }
-    if (k === 'thrust' && B.stage === 'A' || k === 'stuck') { rot = -0.14; dx = -10; }
-    if (k === 'slam') { sx = 1.08; sy = 0.92; }
-    if (k === 'cast' || k === 'guard') { sy = 1 + Math.sin(time * 14) * 0.015; }
-    if (k === 'roar') { sx = 1 + Math.sin(time * 40) * 0.03; sy = 1.04; }
-    if (k === 'hurt') { rot = 0.1; }
+    // hình Gemini quay mặt TRÁI; an = [tâm thân x, chân y] của từng khung
     if (B.st === 'atk' && B.move === 'dash' && B.stage === 'A') {   // bóng mờ khi lao
       cx.save(); cx.globalAlpha = 0.3; cx.globalCompositeOperation = 'lighter';
-      for (let i = 1; i <= 3; i++) { cx.save(); cx.translate(X - f * i * 26, Y); cx.scale(-f, 1); cx.drawImage(spr, -60, -148); cx.restore(); }
+      for (let i = 1; i <= 3; i++) { cx.save(); cx.translate(X - f * i * 26, Y); cx.scale(-f, 1); cx.drawImage(spr, -an[0], -an[1]); cx.restore(); }
       cx.restore();
     }
-    cx.save(); cx.translate(X + sh, Y); cx.scale(-f, 1); cx.translate(dx, 0); cx.rotate(rot); cx.scale(sx, sy);
-    cx.drawImage(spr, -60, -148);
-    if (B.flash > 0 || B.phase && Math.sin(time * 5) > 0.6 || k === 'roar') {   // trúng đòn chớp trắng, pha 2 ánh tím
+    cx.save(); cx.translate(X + sh, Y); cx.scale(-f, 1);
+    cx.drawImage(spr, -an[0], -an[1]);
+    if (B.flash > 0 || B.phase && B.st !== 'dead' && Math.sin(time * 5) > 0.6) {   // trúng đòn chớp trắng, pha 2 ánh tím
       cx.globalCompositeOperation = 'lighter'; cx.globalAlpha = B.flash > 0 ? 0.8 : 0.25;
-      cx.filter = B.flash > 0 ? 'brightness(2)' : 'hue-rotate(60deg)'; cx.drawImage(spr, -60, -148); cx.filter = 'none';
+      cx.filter = B.flash > 0 ? 'brightness(2)' : 'hue-rotate(60deg)'; cx.drawImage(spr, -an[0], -an[1]); cx.filter = 'none';
     }
     cx.restore();
   } else {
@@ -1396,6 +1408,7 @@ function frame(now) {
   }
   cam.x += (P.x + P.w / 2 + P.face * 80 - VW / 2 - cam.x) * Math.min(1, dt * 6);
   cam.y += (P.y - VH * (usingTouch ? 0.38 : 0.5) - cam.y) * Math.min(1, dt * 4);
+  if (B.st && B.st !== 'wait') cam.x += ((BOSS_ARENA.x0 + BOSS_ARENA.x1) / 2 - VW / 2 - cam.x) * Math.min(1, dt * 5);   // khóa camera giữa đấu trường
   cam.x = Math.max(0, Math.min(MW * TS - VW, cam.x)); cam.y = Math.max(-80, Math.min(MH * TS - VH + (usingTouch ? 90 : 0), cam.y));
   renderAlpha = hitstop > 0 ? 1 : acc / STEP;
   draw(); updateHud();
