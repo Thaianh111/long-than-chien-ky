@@ -29,6 +29,7 @@ def key_green(im):
     arr = np.array(im.convert('RGBA')).astype(int)
     r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
     green = (g > 140) & (g > r * 1.35) & (g > b * 1.35)
+    green |= (g > 150) & (g >= r + 12) & (g >= b + 12)   # ngôi sao mờ của Gemini và viền xanh nhạt
     arr[..., 3] = np.where(green, 0, 255)
     # bỏ viền xanh lem: kéo kênh G xuống nếu còn ám xanh
     spill = (g > r) & (g > b) & ~green
