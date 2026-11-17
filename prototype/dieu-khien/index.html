@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Long Thần Chiến Ký — Bản thử điều khiển Xích Long</title>
+<title>Long Thần Chiến Ký — Chơi thử Xích Long & Thanh Vũ</title>
 <style>
   html,body{margin:0;height:100%;background:#0b0d14;overflow:hidden;touch-action:none;
     -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font-family:system-ui,sans-serif}
@@ -19,6 +19,18 @@
   #rot{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;
     color:#f3e6c4;background:#0b0d14;font-size:18px;padding:30px}
   @media (orientation:portrait) and (pointer:coarse){#rot{display:flex}}
+  #menu{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(11,13,20,.86);color:#f3e6c4;gap:14px;z-index:5}
+  #menu h1{margin:0;font-size:22px;color:#ffcf5a;letter-spacing:1px}
+  #menu .row{display:flex;gap:18px}
+  #menu button{font:inherit;cursor:pointer;border-radius:14px;padding:10px 14px 12px;min-width:150px;color:#f3e6c4;
+    display:flex;flex-direction:column;align-items:center;gap:4px;font-size:16px;font-weight:700}
+  #menu button img{width:120px;height:88px;object-fit:contain;image-rendering:pixelated}
+  #menu small{font-weight:400;opacity:.75;font-size:12px}
+  #menu .xl{background:#3a1512;border:2px solid #c9a227}
+  #menu .tv{background:#0f2e38;border:2px solid #7fe3ff}
+  #swapBtn{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:4;font:inherit;font-size:13px;font-weight:700;
+    padding:6px 14px;border-radius:20px;border:2px solid rgba(255,220,150,.6);background:rgba(20,26,46,.8);color:#f3e6c4;cursor:pointer}
 </style>
 </head>
 <body>
@@ -30,8 +42,15 @@
   <div class="btn" data-k="dash"  style="right:calc(3% + 196px);bottom:6%;width:74px;height:74px">LƯỚT</div>
   <div class="btn" data-k="attack" style="right:calc(3% + 98px);bottom:20%;width:84px;height:84px">CHÉM</div>
   <div class="btn" data-k="jump"  style="right:3%;bottom:6%;width:88px;height:88px">NHẢY</div>
-  <div class="btn" data-k="swap"  style="right:3%;top:14%;width:62px;height:62px;font-size:12px">ĐỔI<br>NV</div>
 </div>
+<div id="menu">
+  <h1>LONG THẦN CHIẾN KÝ</h1><div>Chọn nhân vật để chơi thử</div>
+  <div class="row">
+    <button class="xl" data-hero="xl"><img src="frames/f_id1.png" alt="">XÍCH LONG<small>Kiếm sĩ · đao laze</small></button>
+    <button class="tv" data-hero="tv"><img src="frames/f_tv_mau.png" alt="">THANH VŨ<small>Xạ thủ · Thần Nỏ</small></button>
+  </div>
+</div>
+<button id="swapBtn">⇄ Đổi sang Thanh Vũ</button>
 <div id="rot">Xoay ngang điện thoại để chơi thử 🔄</div>
 <script>
 /* =========================================================
@@ -412,9 +431,13 @@ function updateFoes(dt) {
 
 /* ---------------- Thanh Vũ: Thần Nỏ ---------------- */
 let HERO = 'xl';
+document.querySelectorAll('#menu button').forEach(b => b.addEventListener('click', () => { swapHero(b.dataset.hero); document.getElementById('menu').style.display = 'none'; try { audio(); } catch (e) {} }));
+document.getElementById('swapBtn').addEventListener('click', e => { e.currentTarget.blur(); swapHero(); });
 const bolts = [];
-function swapHero() {
-  HERO = HERO === 'xl' ? 'tv' : 'xl';
+function swapHero(to) {
+  HERO = to || (HERO === 'xl' ? 'tv' : 'xl');
+  document.getElementById('swapBtn').textContent = '⇄ Đổi sang ' + (HERO === 'xl' ? 'Thanh Vũ' : 'Xích Long');
+  document.querySelector('.btn[data-k="attack"]').textContent = HERO === 'tv' ? 'BẮN' : 'CHÉM';
   P.atk = null; P.arc = null; P.combo = 0; P.aiming = false; P.shootT = 0; P.recover = 0;
   fx.push({ k: 'ring', x: P.x + P.w / 2, y: P.y + P.h / 2, life: 0.3, max: 0.3, big: true });
   sparks(P.x + P.w / 2, P.y + P.h / 2, 14, HERO === 'tv' ? '#7fe3ff' : '#ffb347');
