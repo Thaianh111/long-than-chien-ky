@@ -120,7 +120,7 @@ const T = {
   // --- xuất hiện: tia năng lượng rơi xuống (kiểu Mega Man X8) ---
   WARP_FALL: 0.32,        // tia rơi từ trên trời xuống bao lâu (giây)
   WARP_FORM: 0.28,        // tia chạm đất rồi hiện thành người bao lâu
-  VOICE: 0.8,             // âm lượng tiếng hô (0 = tắt)
+  VOICE: 0.9,             // âm lượng tiếng hô thu sẵn trong thư mục voice/ (0 = tắt)
   // --- THANH VŨ: Thần Nỏ ---
   TV: {
     CHARGE1: 0.35,        // giữ nút bao lâu thì lên nạp cấp 1 (giây)
@@ -561,45 +561,28 @@ function sfxCharge(lv) {
   o.type = 'sine'; o.frequency.setValueAtTime(lv === 2 ? 880 : 520, t); o.frequency.exponentialRampToValueAtTime(lv === 2 ? 1760 : 880, t + 0.15);
   g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.22);
 }
-// ---- Tiếng hô tổng hợp bằng WebAudio (giọng "máy" kiểu game 16-bit, không dùng file) ----
-// Nguồn: sóng răng cưa ở cao độ giọng + tiếng thở (âm h), lọc qua 3 dải formant để ra nguyên âm.
-const VOW = { a: [800, 1250, 2600], e: [500, 1900, 2600], i: [320, 2300, 3000], o: [520, 900, 2500], u: [350, 800, 2300] };
-const CRIES = {   // [nguyên âm..], cao độ đầu, cao độ cuối, thời gian, âm h đầu, độ to
-  xl_0:   { v: ['a'], f0: [150, 112], d: 0.17, h: 0.05, g: 1 },              // "Hạ!"
-  xl_1:   { v: ['i', 'a'], f0: [165, 125], d: 0.19, h: 0.02, g: 1 },        // "Ya!"
-  xl_2:   { v: ['a', 'i', 'a', 'a'], f0: [140, 175, 105], d: 0.46, h: 0.06, g: 1.25 },  // "Hây-yaaa!"
-  xl_air: { v: ['i', 'a', 'a'], f0: [175, 135], d: 0.3, h: 0.04, g: 1.1 },  // "Hyaa!"
-  tv_0:   { v: ['a'], f0: [205, 170], d: 0.09, h: 0.04, g: 0.6 },           // "Hự!" ngắn
-  tv_1:   { v: ['e', 'a'], f0: [215, 165], d: 0.18, h: 0.04, g: 0.9 },      // "Hây!"
-  tv_2:   { v: ['a', 'a', 'o'], f0: [190, 230, 150], d: 0.42, h: 0.07, g: 1.2 },  // "Haaa!" lúc nạp đầy
-};
-let lastShout = 0;
-function shout(key) {
-  const ac = AC, C = CRIES[key]; if (!ac || !C || !T.VOICE) return;
-  const t = ac.currentTime; if (t - lastShout < 0.12 && key === 'tv_0') return; lastShout = t;
-  const out = ac.createGain(); out.gain.setValueAtTime(0.0001, t);
-  out.gain.exponentialRampToValueAtTime(0.5 * C.g * T.VOICE, t + C.h + 0.015);
-  out.gain.setValueAtTime(0.5 * C.g * T.VOICE, t + C.d * 0.6);
-  out.gain.exponentialRampToValueAtTime(0.0001, t + C.d + C.h);
-  out.connect(ac.destination);
-  // âm h: tiếng xì ngắn ở đầu
-  if (C.h) { const n = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
-    n.buffer = noiseBuf(ac); f.type = 'bandpass'; f.frequency.value = 1600; f.Q.value = 0.8;
-    g.gain.setValueAtTime(0.25 * C.g * T.VOICE, t); g.gain.exponentialRampToValueAtTime(0.0001, t + C.h + 0.04);
-    n.connect(f).connect(g).connect(ac.destination); n.start(t); n.stop(t + C.h + 0.06); }
-  // giọng: răng cưa + rung nhẹ, cao độ đi theo đường f0
-  const o = ac.createOscillator(); o.type = 'sawtooth'; const t0 = t + C.h * 0.7;
-  o.frequency.setValueAtTime(C.f0[0], t0);
-  for (let i = 1; i < C.f0.length; i++) o.frequency.linearRampToValueAtTime(C.f0[i], t0 + C.d * i / (C.f0.length - 1));
-  const vib = ac.createOscillator(), vg = ac.createGain(); vib.frequency.value = 7; vg.gain.value = 4; vib.connect(vg).connect(o.frequency);
-  const pre = ac.createGain(); pre.gain.value = 0.6; o.connect(pre);
-  [1, 0.55, 0.25].forEach((amp, k) => {
-    const f = ac.createBiquadFilter(), g = ac.createGain(); f.type = 'bandpass'; f.Q.value = k ? 9 : 6; g.gain.value = amp * 3;
-    C.v.forEach((v, i) => { const tt = t0 + C.d * i / Math.max(1, C.v.length - 1); i ? f.frequency.linearRampToValueAtTime(VOW[v][k], tt) : f.frequency.setValueAtTime(VOW[v][k], tt); });
-    pre.connect(f).connect(g).connect(out);
-  });
-  o.start(t0); vib.start(t0); o.stop(t + C.d + C.h + 0.05); vib.stop(t + C.d + C.h + 0.05);
+// ---- Tiếng hô: phát file thu sẵn (voice/<tên>.mp3). Chưa có file thì im lặng. ----
+// Tên file: xl_0 xl_1 xl_2 xl_air (Xích Long chém nhát 1/2/3/trên không), tv_0 tv_1 tv_2 (Thanh Vũ bắn thường/nạp 1/nạp đầy).
+// Có thể để nhiều bản cho đỡ nhàm: xl_0.mp3, xl_0b.mp3 ... (VOICE_VARIANTS)
+const VOICE_KEYS = ['xl_0', 'xl_1', 'xl_2', 'xl_air', 'tv_0', 'tv_1', 'tv_2'], VOICE_VARIANTS = ['', 'b', 'c'];
+const voiceBufs = {}; let voiceLoading = false, lastShout = 0;
+function loadVoices() {
+  if (voiceLoading || !AC) return; voiceLoading = true;
+  // voice/list.json liệt kê các file đang có, vd ["xl_0.mp3","xl_0b.mp3","tv_2.mp3"]
+  fetch('voice/list.json').then(r => r.ok ? r.json() : []).then(files => files.forEach(f => {
+    const k = VOICE_KEYS.find(k => f.startsWith(k) && VOICE_VARIANTS.some(v => f === k + v + '.mp3')); if (!k) return;
+    fetch('voice/' + f).then(r => r.arrayBuffer()).then(ab => AC.decodeAudioData(ab))
+      .then(buf => (voiceBufs[k] = voiceBufs[k] || []).push(buf)).catch(() => {});
+  })).catch(() => {});
 }
+function shout(key) {
+  const ac = AC; if (!ac || !T.VOICE) return; loadVoices();
+  const list = voiceBufs[key]; if (!list || !list.length) return;
+  const t = ac.currentTime; if (key === 'tv_0' && t - lastShout < 0.15) return; lastShout = t;
+  const src = ac.createBufferSource(), g = ac.createGain(); src.buffer = list[Math.floor(Math.random() * list.length)];
+  g.gain.value = T.VOICE; src.connect(g).connect(ac.destination); src.start(t);
+}
+addEventListener('pointerdown', () => loadVoices()); addEventListener('keydown', () => loadVoices());
 function sfxWarp() {               // tia rơi: tiếng vút trượt từ cao xuống
   const ac = AC; if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
   o.type = 'square'; o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(220, t + T.WARP_FALL);
