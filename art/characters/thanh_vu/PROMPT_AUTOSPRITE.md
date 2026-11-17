@@ -22,6 +22,8 @@ Cài đặt: Imagine 1.5 (thử) hoặc Kling 3.0 (đẹp) · 720p · Chroma Key
 | 2 | Chạy | 2s | Running to the right in place, athletic soldier run leaning forward 20 degrees, both hands keep the crossbow level and steady at hip height pointing forward, legs clearly alternate with an even rhythm, no limping. Loopable. |
 | 3 | Chạy vừa bắn | 2s | Running to the right in place exactly like a soldier run, while the crossbow is raised to shoulder height and aimed straight forward, firing small cyan energy bolts to the right with a short recoil each time. Loopable. |
 | 4 | Đứng bắn | 2s | Standing, raises the crossbow to the shoulder and aims straight right, charges energy so the string glows brighter, fires one cyan energy bolt with a strong recoil pushing the shoulders back, then lowers the crossbow to ready. |
+| 4b | Gồng tụ lực | 2s | Standing in a wide braced stance, crossbow raised to the shoulder aimed straight right, charging power: cyan energy gathers into a growing glowing orb at the crossbow front, small sparks spiral inward, armor lines and the chest sun emblem glow brighter, cloth and feathers flutter from the energy, body trembles slightly from the strain. Loopable, keep holding the aim, do not fire. |
+| 4c | Bắn phát nạp đầy | 2s | From a braced charging stance aiming right with a big glowing cyan orb at the crossbow front, releases one huge cyan energy blast to the right, a heavy recoil pushes the whole body back and the back foot slides, bright muzzle flash, then lowers the crossbow and recovers to ready. |
 | 5 | Nhảy | 2s | Crouches, jumps straight up with knees tucked holding the crossbow close to the chest, reaches the top, falls with legs extending, lands in a crouch, returns to ready. Body stays in side profile the whole time, especially in the air. |
 | 6 | Nhảy bắn | 2s | In mid-air with knees tucked, aims the crossbow straight right and fires one cyan energy bolt, small recoil, then falls and lands. Body stays in side profile in the air. |
 | 7 | Lướt | 1.5s | Bursts into a fast low ground dash to the right in place, body leaning far forward, crossbow tucked under the arm, then brakes by sliding on the front heel and leaning back. |
@@ -34,5 +36,5 @@ Ví dụ prompt đầy đủ (Đứng thở):
 Strict side profile view facing right for the entire clip, never turn toward the camera, never show the front of the body. Standing ready with the crossbow held level at hip height pointing right, breathing slowly, feather shoulder guards and cloth sway gently, crossbow string glows softly. Loopable. Camera fixed, character stays centered in place, same size, green background unchanged, no dust, no smoke, no other objects.
 ```
 
-**Ưu tiên làm trước:** 1, 2, 4, 5 (đủ chơi được). Sau đó làm 3, 6, 7, 8. Hai động tác 9, 10 để sau cùng.
+**Ưu tiên làm trước:** 1, 2, 4, 4b, 4c, 5 (đủ chơi được). Sau đó làm 3, 6, 7, 8. Hai động tác 9, 10 để sau cùng.
 Làm xong anh tải **sprite pack (zip)** gửi em như lần Xích Long, em tự cắt và ghép.
