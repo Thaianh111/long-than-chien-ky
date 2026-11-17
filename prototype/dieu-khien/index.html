@@ -72,8 +72,8 @@ const T = {
   // --- hoạt ảnh (chỉ ảnh hưởng hình, không đổi cảm giác tay) ---
   SQUASH_K: 520,          // độ cứng lò xo co giãn (cao = bật về nhanh)
   SQUASH_D: 26,           // độ hãm lò xo (cao = ít nảy)
-  STRIDE: 46,             // chạy được bao nhiêu px thì đổi 1 bước chân
-  RUN_BOB: 3,             // nhún lên xuống khi chạy (px)
+  STRIDE: 22,             // chạy được bao nhiêu px thì sang khung chạy kế tiếp (nhỏ = chân đảo nhanh)
+  RUN_BOB: 0,             // nhún thêm bằng code (0 vì khung chạy đã tự nhún)
   GHOST_EVERY: 0.032,     // bao lâu để lại 1 bóng mờ khi lướt (giây)
   RECOVER: 0.09,          // giữ dáng chém thêm chút sau nhát cuối cho khỏi giật về
   AIR_SLASH: { time: 0.26, from: 0.02, to: 0.16, a0: -1.6, a1: 4.6, len: 1.2, reach: 76, h: 120, dmg: 1, lunge: 0, knock: 300 },
@@ -83,7 +83,7 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -192,7 +192,7 @@ function updateAnim(dt) {
   if (P.ground && !P.dash && Math.abs(P.vx) > 40) {
     const before = Math.floor(P.gait);
     P.gait += Math.abs(P.vx) * dt / T.STRIDE;
-    if (Math.floor(P.gait) !== before) dust(P.x + P.w / 2 - P.face * 8, P.y + P.h, 2);
+    const now = Math.floor(P.gait); if (now !== before && now % 4 === 0) dust(P.x + P.w / 2 - P.face * 8, P.y + P.h, 3);
   } else P.gait = 0;
   if (P.face !== P.lastFace) { if (P.ground && !P.atk) { P.turnT = 0.08; squash(0.7, 1.04); } P.lastFace = P.face; }
   P.turnT = Math.max(0, P.turnT - dt);
@@ -401,11 +401,12 @@ function drawSwing() {
 
 // Điểm neo của từng dáng = vị trí HÔNG trong khung 150x110 (chân luôn chạm đáy khung).
 // Trước đây mọi dáng đều canh giữa khung nên đổi dáng là thân người nhảy ngang tới 30px -> giật.
-const FA = { idle: 73, run: 57, jump: 98, dash: 88, windup: 74, slash_thrust: 75, slash_up: 80, x_overhead: 79 };
+const FA = { run1: 68, run2: 75, run3: 75, run4: 72, run5: 68, run6: 75, run7: 76, run8: 73,
+  idle: 73, run: 57, jump: 98, dash: 88, windup: 74, slash_thrust: 75, slash_up: 80, x_overhead: 79 };
 // Tâm vệt chém (vai) so với chân, theo từng nhát
 const SWING_AT = { 0: { x: 8, y: -52 }, 1: { x: 8, y: -56 }, 2: { x: 10, y: -50 }, air: { x: 2, y: -58 } };
 // Thêm khung mới: bỏ file vào frames/ rồi ghi tên vào đây theo thứ tự (vd run: ['run1','run2',...]).
-const ANIM = { idle: ['idle'], run: ['run'], jump_up: ['jump'], jump_down: ['jump'], wall: ['jump'], dash: ['dash'] };
+const ANIM = { idle: ['idle'], run: ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'], jump_up: ['jump'], jump_down: ['jump'], wall: ['jump'], dash: ['dash'] };
 
 function atkFrame(endPose) {
   const a = P.atk; if (!a) return null;
@@ -453,7 +454,7 @@ function drawPlayer(alpha) {
   // nhún khi chạy: 2 lần mỗi chu kỳ bước, kèm nghiêng người theo tốc độ
   let bob = 0, rot = 0;
   if (name === ANIM.run[Math.floor(P.gait) % ANIM.run.length] && P.ground && Math.abs(P.vx) > 40) {
-    const ph = P.gait % 1; bob = Math.sin(ph * Math.PI) * T.RUN_BOB; rot = 0.03 + Math.sin(ph * Math.PI * 2) * 0.015;
+    const ph = (P.gait % 4) / 4; bob = Math.sin(ph * Math.PI) * T.RUN_BOB; rot = 0.02;
   }
   if (!P.ground && !P.wall && !P.atk && !P.dash) rot = Math.max(-0.07, Math.min(0.09, P.vy / 9000));
   if (P.dash) rot = 0.03;

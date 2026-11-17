@@ -18,6 +18,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('sheet'); ap.add_argument('outdir'); ap.add_argument('name')
 ap.add_argument('--cao', type=int, default=84); ap.add_argument('--hang', type=int, default=1)
 ap.add_argument('--cot', type=int, default=8)
+ap.add_argument('--tach', action='store_true', help='tách theo hình dáng (khi các dáng chạm/lấn nhau) thay vì chia lưới đều')
 a = ap.parse_args()
 FW, FH = 150, 110
 here = os.path.dirname(os.path.abspath(__file__))
@@ -49,18 +50,41 @@ def clean(c):
     sizes = ndimage.sum(m, lab, range(1, n + 1)); big = sizes.max()
     edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
     for k in range(1, n + 1):
-        if sizes[k - 1] < big * 0.15 and (k in edge or sizes[k - 1] < 6):
+        if (sizes[k - 1] < big * 0.15 and k in edge) or sizes[k - 1] < big * 0.01:
             arr[lab == k, 3] = 0
     return Image.fromarray(arr, 'RGBA')
 
 sheet = key_green(Image.open(a.sheet))
-W, H = sheet.size; cw, ch = W // a.cot, H // a.hang
+W, H = sheet.size
 cells = []
-for j in range(a.hang):
-    for i in range(a.cot):
-        c = clean(sheet.crop((i * cw, j * ch, (i + 1) * cw, (j + 1) * ch)))
+if a.tach:
+    # co mặt nạ vài px cho các dáng dính nhau tách ra, lấy các mảng lớn làm "hạt",
+    # rồi gán mỗi điểm ảnh về hạt gần nhất -> mỗi dáng một hình riêng
+    from scipy import ndimage
+    arr = np.array(sheet); m = arr[..., 3] > 128
+    for it in range(2, 9):
+        er = ndimage.binary_erosion(m, iterations=it)
+        lab, n = ndimage.label(er, structure=np.ones((3, 3)))
+        sizes = ndimage.sum(er, lab, range(1, n + 1))
+        seeds = [k + 1 for k in range(n) if sizes[k] > sizes.max() * 0.25]
+        if len(seeds) >= a.hang * a.cot: break
+    seedmap = np.zeros_like(lab)
+    for i, k in enumerate(seeds, 1): seedmap[lab == k] = i
+    _, (iy, ix) = ndimage.distance_transform_edt(seedmap == 0, return_indices=True)
+    owner = seedmap[iy, ix] * m
+    order = sorted(range(1, len(seeds) + 1), key=lambda i: np.nonzero(seedmap == i)[1].mean())
+    for i in order:
+        one = arr.copy(); one[..., 3] = np.where(owner == i, arr[..., 3], 0)
+        c = clean(Image.fromarray(one, 'RGBA'))
         bb = c.getchannel('A').point(lambda v: 255 if v > 128 else 0).getbbox()
-        if bb: cells.append((c, bb))
+        cells.append((c, bb))
+else:
+    cw, ch = W // a.cot, H // a.hang
+    for j in range(a.hang):
+        for i in range(a.cot):
+            c = clean(sheet.crop((i * cw, j * ch, (i + 1) * cw, (j + 1) * ch)))
+            bb = c.getchannel('A').point(lambda v: 255 if v > 128 else 0).getbbox()
+            if bb: cells.append((c, bb))
 tallest = max(bb[3] - bb[1] for _, bb in cells)
 ground = max(bb[3] for _, bb in cells)            # đường đất chung của cả tấm
 scale = a.cao / tallest

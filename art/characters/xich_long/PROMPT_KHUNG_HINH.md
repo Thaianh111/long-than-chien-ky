@@ -2,7 +2,7 @@
 
 Bản thử hiện mới có **8 dáng**, mỗi hành động chỉ có 1 hình. Muốn chạy, nhảy và chém mượt như Mega Man X thì mỗi hành động cần nhiều khung hình liên tiếp. Bảng dưới là các tấm hình cần vẽ, xếp theo thứ tự ưu tiên.
 
-**Cách làm:** mở Gemini, đính kèm ảnh mẫu `xich_long_ngang_dao_laze_goc.png`, dán prompt của tấm cần vẽ rồi gửi hình nhận được cho Claude. Claude cắt bằng `tools/cat_khung.py` rồi ghép vào game.
+**Cách làm:** mở Gemini, đính kèm ảnh mẫu `xich_long_ngang_dao_laze_goc.png`, dán prompt của tấm cần vẽ rồi gửi hình nhận được cho Claude. Claude cắt bằng `tools/cat_khung.py` (thêm `--tach` khi các dáng dính nhau) rồi ghép vào game.
 
 ## Phần dán chung (để ĐẦU mọi prompt)
 ```
@@ -12,7 +12,7 @@ Use the attached character as the exact reference: same red-and-gold Vietnamese 
 ## Các tấm cần vẽ (ưu tiên từ trên xuống)
 | # | Tấm | Prompt riêng (dán sau phần chung) |
 |---|---|---|
-| 1 | Chạy, 8 khung | `8-frame side-view run cycle loop: contact, down, passing, up, contact (other leg), down, passing, up. Saber held low behind, coat tails flowing back. Smooth, evenly spaced motion.` |
+| 1 | ✅ Chạy, 8 khung (đã có, `sheets/chay_8_khung_gemini.png`) | `8-frame side-view run cycle loop: contact, down, passing, up, contact (other leg), down, passing, up. Saber held low behind, coat tails flowing back. Smooth, evenly spaced motion.` |
 | 2 | Nhảy, 5 khung | `5 frames: crouch before jump, rising (legs tucked), apex, falling (legs reaching down), landing crouch.` |
 | 3 | Lướt, 3 khung | `3 frames of a ground dash: push-off lean, full forward dash low to the ground with coat streaming back, braking stop with heels skidding.` |
 | 4 | Chém nhát 1, 5 khung | `5-frame downward diagonal saber slash: anticipation (saber raised behind head), start of swing, mid-swing with motion smear, saber low in front, recovery.` |
