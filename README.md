@@ -35,3 +35,6 @@ Engine: Unity, PC + điện thoại.
   - Xích Long đã đủ bộ khung (Gemini, 2026-11-17): chạy 8, nhảy 5, lướt 3, chém nhát 1/2/3 = 5/5/6, bám + đạp tường 3, đứng thở 4, chém trên không 5. Tấm gốc ở `art/characters/xich_long/sheets/`.
 - `tools/cat_khung.py` — cắt tấm hình nhiều dáng nền xanh lá thành các khung 150×110, cùng tỉ lệ, ép về bảng màu chung.
 - `art/characters/xich_long/PROMPT_KHUNG_HINH.md` — prompt vẽ thêm khung chạy, nhảy, lướt, chém.
+
+## Ghi công (credit)
+- Tiếng hô nhân vật: "Male Grunt/Yelling sounds" — HaelDB, OpenGameArt (CC0 / OGA-BY 3.0).
