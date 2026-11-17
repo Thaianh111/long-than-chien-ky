@@ -23,7 +23,7 @@ Original character design for a side-scrolling action game: THANH VU, a young Vi
 |---|---|---|
 | 1 | ✅ Bắn đứng, 4 khung (`sheets/ban_dung_4_khung_gemini.png`) | giương nỏ → nạp lực → bắn giật → hạ nỏ |
 | 2 | ✅ Đứng thở, 4 khung (`sheets/dung_tho_4_khung_gemini.png`, đã xóa vạch bóng dưới chân) | |
-| 3 | ⏳ Chạy 4 khung (✅ `sheets/chay_4_khung_gemini.png`) + vẽ lại đổi chân 4 khung (chưa có) | làm 2 bước như Xích Long cho khỏi thọt |
+| 3 | ✅ Chạy 4 khung (`sheets/chay_4_khung_gemini.png`). Thử đổi chân 2 lần không đạt (`chay_doi_chan_thu_gemini.png` thân trên khác hẳn) -> dùng 4 khung lặp, neo theo ngực | làm 2 bước như Xích Long cho khỏi thọt |
 | 4 | Chạy vừa bắn | |
 | 5 | Nhảy 5 khung + bắn trên không | |
 | 6 | Lướt 3 khung | |
