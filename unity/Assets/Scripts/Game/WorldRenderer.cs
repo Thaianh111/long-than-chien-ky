@@ -40,11 +40,18 @@ namespace LongThan.Game
             int i0 = Mathf.FloorToInt(ox / TS), i1 = i0 + Mathf.CeilToInt(VW / TS) + 2;
             for (int j = 0; j < map.h; j++) for (int i = i0; i < i1; i++)
             {
-                if (!map.SolidCell(i, j)) continue;
+                int cv = map.Get(i, j); if (cv == 0 || cv == 2) continue;
                 float X = i * TS - ox, Y = j * TS - oy;
+                if (cv == 3)   // cột đá Sơn Tinh: đá nâu, vân vàng
+                {
+                    p.FillRect(X + 2, Y, TS - 4, TS, "#5b4a3a"); p.FillRect(X + 2, Y, 6, TS, "#72604b");
+                    p.FillRect(X + 14, Y + 8, 4, 16, "#C9A227"); p.FillRect(X + 10, Y + 14, 12, 3, "#C9A227");
+                    if (map.Get(i, j - 1) != 3) p.FillRect(X + 2, Y, TS - 4, 3, "#e0c060");
+                    continue;
+                }
                 p.FillRect(X, Y, TS, TS, "#2e3346"); p.FillRect(X, Y, TS, 5, "#3c4259");
                 p.FillRect(X, Y + TS - 2, TS, 2, "#262a3a"); p.FillRect(X + TS - 2, Y, 2, TS, "#262a3a");
-                if (!map.SolidCell(i, j - 1)) p.FillRect(X, Y, TS, 2, "#C9A227");
+                if (!map.SolidCell(i, j - 1) || map.Get(i, j - 1) == 2) p.FillRect(X, Y, TS, 2, "#C9A227");
             }
             for (int i = 0; i < g.checkpoints.Length; i++)
             {
@@ -52,7 +59,7 @@ namespace LongThan.Game
                 p.FillRect(X, Y - 52, 3, 52, "#888888"); p.FillRect(X + 3, Y - 52, 22, 14, i <= g.cpIndex ? "#d8352a" : "#555555");
             }
             DrawFoes(g, ox, oy);
-            DrawBoss(g, ox, oy);
+            DrawBoss(g, ox, oy); DrawSub(g, ox, oy);
             if (!(g.P.inv > 0 && Mathf.FloorToInt(g.P.inv * 20) % 2 == 1)) DrawPlayer(g, camX, camY, alpha);   // nhấp nháy khi bất tử
             foreach (var pa in g.parts) p.FillRect(Mathf.Round(pa.x - ox), Mathf.Round(pa.y - oy), 3, 3, A(pa.c, Mathf.Min(1, pa.life * 3)));
             DrawBolts(g, ox, oy); DrawWater(g, VW, ox, oy); DrawFx(g, ox, oy);
@@ -61,7 +68,7 @@ namespace LongThan.Game
             p.FillRect(14, 74, 12, hpMax * 6 + 4, Color.black);
             for (int i = 0; i < hpMax; i++) p.FillRect(16, 76 + (hpMax - 1 - i) * 6, 8, 4, i < g.P.hp ? C(g.hero == Hero.ThanhVu ? "#7fe3ff" : "#ffb347") : C("#2a2a3a"));
             if (g.flashT > 0) p.FillRect(0, 0, VW, VH, A("#fff1d6", g.flashT / 0.06f * 0.35f));
-            DrawBossHud(g, VW);
+            DrawBossHud(g, VW); DrawSubHud(g, VW);
             DrawTalkBox(g, VW);
             var B = g.boss;
             if (B.st == BossSt.Dead && B.t > 2.4f) p.FillRect(0, VH / 2 - 34, VW, 60, C("rgba(0,0,0,.5)"));
@@ -324,6 +331,47 @@ namespace LongThan.Game
                     p.FillRect(X, wy, 4, Cfg.VH, body); p.FillRect(X, wy, 4, 2, top);
                 }
             }
+        }
+
+        /// <summary>Thuồng Luồng: vẽ phần hình nằm trong đấu trường (cắt theo mép), cục nước phun.</summary>
+        void DrawSub(G g, float ox, float oy)
+        {
+            var S = g.sub; var Ar = g.level.sub; var TL = Cfg.TL;
+            if (S.st == SubSt.Wait || (S.st == SubSt.Dead && S.t > 2.5f)) return;
+            bool fast = S.st == SubSt.Atk && S.move == SubMove.Surge && S.stage == Stage.A;
+            var img = Frame("tl_swim" + (1 + Mathf.FloorToInt(g.time * (fast ? 18 : 10)) % TL.FRAMES));
+            if (img)
+            {
+                float shake = S.st == SubSt.Atk && S.move == SubMove.Float && S.stage == Stage.R ? Mathf.Sin(g.time * 70) * 3 : 0;
+                float sx = S.x + shake, cl = Ar.x0, cr = Ar.x1, bed = Ar.surface + TL.Y.BED;
+                float v0 = S.face < 0 ? cl - sx : sx + TL.FW - cr, v1 = S.face < 0 ? cr - sx : sx + TL.FW - cl;
+                float u0 = Mathf.Max(0, v0), u1 = Mathf.Min(TL.FW, v1), hh = Mathf.Min(TL.FH, bed - S.y);
+                if (u1 > u0 && hh > 0)
+                {
+                    bool under = !SubSys.HeadUp(g) && S.st != SubSt.Dead;
+                    float sc = img.width / TL.FW;   // phòng khi ảnh nhập khác cỡ
+                    p.Save();
+                    if (S.face < 0) p.Translate(Mathf.Round(sx - ox), Mathf.Round(S.y - oy));
+                    else { p.Translate(Mathf.Round(sx + TL.FW - ox), Mathf.Round(S.y - oy)); p.Scale(-1, 1); }
+                    p.alpha = under ? 0.35f : S.st == SubSt.Dead ? Mathf.Max(0, 1 - S.t / 2.5f) : 1;
+                    p.DrawImagePart(img, u0 * sc, 0, (u1 - u0) * sc, hh * sc, u0, 0, u1 - u0, hh);
+                    if (S.flash > 0 || (S.phase == 1 && !under && Mathf.Sin(g.time * 5) > 0.6f))
+                    { p.additive = true; p.alpha = S.flash > 0 ? 0.8f : 0.25f; p.DrawImagePart(img, u0 * sc, 0, (u1 - u0) * sc, hh * sc, u0, 0, u1 - u0, hh); }
+                    p.Restore();
+                }
+            }
+            foreach (var b in S.shots)
+            {
+                float x = Mathf.Round(b.x - ox), y = Mathf.Round(b.y - oy);
+                p.FillCircle(x, y, TL.SPIT.SIZE, b.back ? C("#ff6a5a") : C("rgba(143,240,255,.9)")); p.FillRect(x - 4, y - 5, 3, 3, Color.white);
+            }
+        }
+        void DrawSubHud(G g, float VW)
+        {
+            var S = g.sub; if (S.st == SubSt.Wait || (S.st == SubSt.Dead && S.t > 2.2f)) return;
+            int n = Cfg.TL.HP, fill = S.st == SubSt.Intro ? Mathf.FloorToInt(Mathf.Min(1, S.t / 1.2f) * n) : S.hp;
+            p.FillRect(VW - 26, 74, 12, n * 5 + 4, Color.black);
+            for (int i = 0; i < n; i++) p.FillRect(VW - 24, 76 + (n - 1 - i) * 5, 8, 4, i < fill ? C(S.phase == 1 ? "#c58bff" : "#3fe0c8") : C("#2a2a3a"));
         }
 
         void DrawBossHud(G g, float VW)

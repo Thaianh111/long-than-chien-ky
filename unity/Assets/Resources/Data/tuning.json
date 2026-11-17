@@ -160,5 +160,6 @@
     "dmg": 1,
     "lunge": 0,
     "knock": 300
-  }
+  },
+  "PILLAR_STEP": 0.07
 }

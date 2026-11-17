@@ -2,11 +2,13 @@
  * Số liệu chỉnh tay của game, đọc từ file JSON trong src/data (không viết cứng trong code).
  * - tuning.json: cảm giác điều khiển, sát thương, quái thường.
  * - boss-thuy-tinh.json: trùm Thủy Tinh (thiết kế: design/gdd/boss-thuy-tinh.md).
+ * - boss-thuong-luong.json: trùm phụ Thuồng Luồng (thiết kế: design/gdd/boss-thuong-luong.md).
  * - frames.json: điểm neo và thứ tự khung hình của nhân vật, trùm.
  */
 import tuning from '../data/tuning.json';
 import bossThuyTinh from '../data/boss-thuy-tinh.json';
 import frames from '../data/frames.json';
+import bossThuongLuong from '../data/boss-thuong-luong.json';
 
 /** Một nhát chém (combo hoặc chém xoay trên không). */
 export interface SlashStep {
@@ -18,6 +20,8 @@ export type Tuning = typeof tuning & { COMBO: SlashStep[]; AIR_SLASH: SlashStep 
 export const T = tuning as Tuning;
 export type BossTuning = typeof bossThuyTinh;
 export const BT: BossTuning = bossThuyTinh;
+/** Trùm phụ Thuồng Luồng (thiết kế: design/gdd/boss-thuong-luong.md). */
+export const TL = bossThuongLuong;
 
 export interface AttackFrames { pre: string[]; act: string[]; post: string[]; rec: string }
 export const FA: Record<string, number> = frames.FA;

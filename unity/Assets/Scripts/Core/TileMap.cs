@@ -2,7 +2,7 @@ using System;
 
 namespace LongThan.Core
 {
-    /// <summary>Bản đồ ô gạch: 1 = gạch đặc, 0 = trống. Mỗi ô ts×ts px.</summary>
+    /// <summary>Bản đồ ô gạch: 0 = trống, 1 = gạch, 2 = đặc nhưng không vẽ (lưng Thuồng Luồng), 3 = cột đá Sơn Tinh. Mỗi ô ts×ts px.</summary>
     public class TileMap
     {
         public readonly int w, h, ts;
@@ -15,7 +15,10 @@ namespace LongThan.Core
             for (int j = y; j < y + rh; j++) for (int i = x; i < x + rw; i++)
                 if (i >= 0 && j >= 0 && i < w && j < h) cells[j, i] = (byte)v;
         }
-        public bool SolidCell(int i, int j) => i >= 0 && i < w && j >= 0 && j < h && cells[j, i] == 1;
+        public bool SolidCell(int i, int j) => i >= 0 && i < w && j >= 0 && j < h && cells[j, i] != 0;
+        /// <summary>Giá trị ô (0 nếu ngoài bản đồ).</summary>
+        public int Get(int i, int j) => i >= 0 && i < w && j >= 0 && j < h ? cells[j, i] : 0;
+        public void Set(int i, int j, int v) { if (i >= 0 && i < w && j >= 0 && j < h) cells[j, i] = (byte)v; }
         public bool SolidAt(float px, float py) => SolidCell((int)Math.Floor(px / ts), (int)Math.Floor(py / ts));
 
         /// <summary>Đẩy vật ra khỏi tường theo trục ngang. Trả về -1/1 nếu đụng tường trái/phải, 0 nếu không.</summary>

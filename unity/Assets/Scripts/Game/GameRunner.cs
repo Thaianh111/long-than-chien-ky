@@ -30,7 +30,7 @@ namespace LongThan.Game
         void Awake()
         {
             Application.targetFrameRate = 120; QualitySettings.vSyncCount = 1;
-            Cfg.Load(Resources.Load<TextAsset>("Data/tuning").text, Resources.Load<TextAsset>("Data/boss-thuy-tinh").text, Resources.Load<TextAsset>("Data/frames").text);
+            Cfg.Load(Resources.Load<TextAsset>("Data/tuning").text, Resources.Load<TextAsset>("Data/boss-thuy-tinh").text, Resources.Load<TextAsset>("Data/frames").text, Resources.Load<TextAsset>("Data/boss-thuong-luong").text);
             sfx = new SynthSfx(gameObject);
             g = G.Create(Levels.HongThuy(), new InputState(), sfx, (uint)System.Environment.TickCount);
             view = new WorldRenderer();
@@ -163,6 +163,8 @@ namespace LongThan.Game
             if (GUI.Button(new Rect(VW / 2 - 70, 6, 140, 22), "⇄ Đổi sang " + (tv ? "Xích Long" : "Thanh Vũ"))) PlayerSys.SwapHero(g);
             var B = g.boss;
             if (B.st != BossSt.Wait && !(B.st == BossSt.Dead && B.t > 2.2f)) GUI.Label(new Rect(VW - 100, 58, 90, 16), "<b>THỦY TINH</b>", hudStyle);
+            var S = g.sub;
+            if (S.st != SubSt.Wait && !(S.st == SubSt.Dead && S.t > 2.2f)) GUI.Label(new Rect(VW - 118, 58, 108, 16), "<b>THUỒNG LUỒNG</b>", hudStyle);
             if (g.talk != null)
             {
                 var t = g.talk; float a = Mathf.Clamp01(Mathf.Min(t.t * 4, (t.dur - t.t) * 4)); var c = GUI.color; GUI.color = new Color(1, 1, 1, a);

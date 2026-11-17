@@ -58,6 +58,8 @@ namespace LongThan.Core
         public List<Foe> foes = new List<Foe>(); public List<Bolt> bolts = new List<Bolt>(); public List<EnemyShot> eshots = new List<EnemyShot>();
         public List<Particle> parts = new List<Particle>(); public List<Fx> fx = new List<Fx>();
         public Boss boss; public List<BossShot> bproj = new List<BossShot>();
+        /// <summary>Trùm phụ Thuồng Luồng và các cột đá Sơn Tinh.</summary>
+        public SubBoss sub; public List<Pillar> pillars = new List<Pillar>();
         public float arenaWater, arenaHaz; public RiseState lvWaterRise; public Talk talk;
         /// <summary>Hệ số vật lý hiện tại (dưới nước nhỏ hơn 1).</summary>
         public float physRun = 1, physGrav = 1, physFall = 1;
@@ -75,6 +77,8 @@ namespace LongThan.Core
             g.P = FreshPlayer(level.checkpoints[0]);
             g.foes = level.foes.Select(f => MakeFoe(f.type, f.tx, f.ty, level.ts, g.rng)).ToList();
             g.boss = Boss.Create(level.arena);
+            g.sub = SubSys.Create(level);
+            g.pillars = PillarSys.Create(g);
             return g;
         }
 

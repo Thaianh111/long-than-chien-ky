@@ -1,5 +1,5 @@
 /** Tải hình. Thiếu file thì game vẫn chạy (vẽ hình dự phòng), không chặn khởi động. */
-import { ANIM, BTA, FA } from './config';
+import { ANIM, BTA, FA, TL } from './config';
 
 export const FR: Record<string, HTMLImageElement> = {};
 export const BG: Record<string, HTMLImageElement> = {};
@@ -13,7 +13,7 @@ function load(src: string): Promise<HTMLImageElement> {
 }
 /** Mọi tên khung cần tải: lấy từ bảng neo (FA, BTA) và bảng hoạt ảnh, cộng quái/hiệu ứng. */
 export function frameNames(): string[] {
-  const s = new Set<string>([...Object.keys(FA), ...Object.keys(BTA), ...FOE_FRAMES]);
+  const s = new Set<string>([...Object.keys(FA), ...Object.keys(BTA), ...FOE_FRAMES, ...Array.from({ length: TL.FRAMES }, (_, i) => 'tl_swim' + (i + 1))]);
   for (const list of Object.values(ANIM)) list.forEach(n => s.add(n));
   return [...s];
 }

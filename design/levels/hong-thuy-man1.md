@@ -1,5 +1,48 @@
 # Màn 1 — HỒNG THỦY (洪水)
 
+**Game:** Long Thần Chiến Ký · **Thời lượng:** khoảng 4 phút tới trùm Thủy Tinh (người mới 5–6 phút)
+**Bản đồ (bản 2, 2026-11-17):** MW = 264 ô × MH = 17 ô (TS = 32px → 8448 × 544 px). Số liệu thật: `game/src/levels/hongThuy.ts`.
+
+## Bản 2 — thêm Bến Bạch Hạc (Thuồng Luồng) và Chân núi Tản Viên
+
+Đoạn 1–4 (ô 0–143) giữ nguyên như bản 1 bên dưới. Từ ô 144 trở đi làm lại:
+
+| # | Đoạn | Ô x | Thời gian | Cường độ | Dạy / thử thách |
+|---|------|-----|-----------|----------|-----------------|
+| 1–4 | Phố ngập → Mái nhà | 0–143 | ~2 phút | thấp → cao | như bản 1 |
+| 5 | **Bến Bạch Hạc** — trùm phụ **Thuồng Luồng** | 144–178 | ~40 s – 2 phút | **đỉnh 2** | Đọc bọt nước để né cú lao, nhảy lên lưng rắn đánh đầu. Thiết kế: `design/gdd/boss-thuong-luong.md` |
+| 6 | **Chân núi Tản Viên** | 179–241 | ~50 s | vừa → cao | **Cột đá Sơn Tinh:** chém/bắn vào cột thì cột dựng lên và nâng người chơi theo. Vách A, sông có 2 cột, vách B, bậc xuống |
+| 7 | **Cổng Thủy Tinh** | 236–263 | nghỉ + trùm | **đỉnh 3** | Điểm lưu ô 238, đấu trường kín 243–263 |
+
+```
+Cường độ
+ cao |              ███                  ▓▓▓ TL              ▓▓▓▓ THỦY TINH
+ vừa |      ██  ██  ███  ██ ██ ██        ▓▓▓       ██  ██    ▓▓▓▓
+thấp |██ ███████████████████████████ ░░  ▓▓▓  ░░ ██████████ ░ ▓▓▓▓
+     +-------------------------------------------------------------> x
+      Phố  Quảng trường Giếng Mái nhà   Bến Bạch Hạc  Tản Viên  Cổng
+```
+
+**Ý đồ:** người chơi gặp cái mới mỗi ~40 giây. Giếng nước dâng dạy "nước đuổi thì leo".
+Thuồng Luồng là bài thi giữa màn về đọc báo hiệu dưới nước. Cột Sơn Tinh mở đầu cho chủ đề Sơn Tinh – Thủy Tinh:
+núi dựng lên chống nước, rồi mới gặp Thủy Tinh.
+
+**Bến Bạch Hạc (ô 150–178):** bờ kè 150–154 (cao 3 ô), tường 155 có cổng hàng 9–11 (đóng khi vào trận),
+bờ trái 156–157, sông sâu 158–175 (mặt nước hàng 13), cọc gỗ 161, 166, 171 (đỉnh hàng 11), bờ phải 176–177,
+cổng ra 178 hàng 9–11 (mở khi hạ trùm). Lưng rắn khi nổi là ô ẩn ở hàng 12.
+
+**Chân núi Tản Viên (ô 179–241):** điểm lưu 182 · cột Sơn Tinh 186 (2 → 6 ô) lên vách A (188–197, đỉnh hàng 7, có tháp súng)
+· sông 198–207 với cột 200 và 204 (2 → 7 ô, phải xuống nước đánh cột rồi đứng lên cho cột nâng) · vách B 208–217
+(tháp súng) · bậc xuống 218–226 · hành lang 227–241 có drone và tháp súng. Người giỏi có thể đạp tường leo vách A,
+bỏ qua cột đầu.
+
+**Điểm lưu:** ô 3, 51, 85, 119, 147 (trước bến), 182 (sau Thuồng Luồng), 238 (trước Thủy Tinh).
+
+---
+
+# Bản 1 (lưu lại để tham khảo đoạn 1–4)
+
+
 **Game:** Long Thần Chiến Ký · **Loại:** màn thử (prototype) · **Thời lượng dự kiến:** 2–3 phút tới boss
 **Bản đồ:** MW = 180 ô × MH = 17 ô (TS = 32px → 5760 × 544 px)
 

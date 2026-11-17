@@ -1,0 +1,93 @@
+{
+  "HP": 24,
+  "P2": 12,
+  "INV": 0.12,
+  "FW": 435,
+  "FH": 121,
+  "HEAD": {
+    "x0": 0,
+    "x1": 115,
+    "y0": 20,
+    "y1": 100
+  },
+  "BODY": {
+    "x0": 115,
+    "x1": 430,
+    "y0": 42,
+    "y1": 110
+  },
+  "PLAT": {
+    "x0": 130,
+    "x1": 420
+  },
+  "Y": {
+    "UNDER": 22,
+    "SURGE": -126,
+    "FLOAT": -82,
+    "SPIT": -112,
+    "BED": 96
+  },
+  "UNDER": [
+    1.6,
+    1.1
+  ],
+  "FOLLOW": 140,
+  "INTRO": 2.8,
+  "SURGE": {
+    "W": 0.9,
+    "SPD": [
+      560,
+      680
+    ],
+    "RISE": 0.15,
+    "DOUBLE": 0.4
+  },
+  "FLOAT": {
+    "W": 0.8,
+    "RISE": 0.4,
+    "HOLD": [
+      3.2,
+      2.4
+    ],
+    "SHAKE": 0.7
+  },
+  "SPIT": {
+    "W": 0.7,
+    "N": [
+      3,
+      5
+    ],
+    "GAP": 0.45,
+    "VX": 300,
+    "VY": 300,
+    "G": 700,
+    "R": 0.6,
+    "SIZE": 9
+  },
+  "DMG": {
+    "TOUCH": 2,
+    "SPIT": 2,
+    "REFL": 2
+  },
+  "WEIGHT": [
+    {
+      "surge": 4,
+      "float": 3,
+      "spit": 2
+    },
+    {
+      "surge": 4,
+      "float": 2,
+      "spit": 3
+    }
+  ],
+  "LINE_IN": [
+    "Thuồng luồng máy của Thủy Tinh giữ bến này!",
+    "Đánh vào ĐẦU nó — lúc nó nổi lên thì nhảy lên lưng!"
+  ],
+  "LINE_OUT": [
+    "Nó chìm rồi! Cổng bên kia đã mở.",
+    "Lên núi Tản Viên — Sơn Tinh để lại cột đá, đánh vào là cột dựng lên."
+  ],
+  "FRAMES": 16
+}

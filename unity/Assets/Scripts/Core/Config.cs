@@ -26,7 +26,7 @@ namespace LongThan.Core
         public SlashStep[] COMBO; public SlashStep AIR_SLASH;
         public float SQUASH_K, SQUASH_D, STRIDE, RUN_BOB, GHOST_EVERY, RECOVER, IDLE_FPS, WALLJUMP_ANIM, WALLKICK_ANIM, DASH_PUSH, DASH_STOP;
         public float TAKEOFF_TIME, APEX_VY, LAND_TIME, LAND_MIN_VY, WARP_FALL, WARP_FORM, VOICE;
-        public TvTuning TV;
+        public TvTuning TV; public float PILLAR_STEP;
     }
 
     public class BtWave { public float W, R, SPD, H, H2, GAP2; public int DMG; }
@@ -44,6 +44,20 @@ namespace LongThan.Core
         public Dictionary<string, float>[] WEIGHT; public string[] LINE_IN, LINE_OUT;
     }
 
+    public class TlBox { public float x0, x1, y0, y1; }
+    public class TlY { public float UNDER, SURGE, FLOAT, SPIT, BED; }
+    public class TlSurge { public float W, RISE, DOUBLE; public float[] SPD; }
+    public class TlFloat { public float W, RISE, SHAKE; public float[] HOLD; }
+    public class TlSpit { public float W, GAP, VX, VY, G, R, SIZE; public int[] N; }
+    public class TlDmg { public int TOUCH, SPIT, REFL; }
+    /// <summary>Trùm phụ Thuồng Luồng (boss-thuong-luong.json, thiết kế: design/gdd/boss-thuong-luong.md).</summary>
+    public class SubTuning
+    {
+        public int HP, P2, FRAMES; public float INV, FW, FH, FOLLOW, INTRO; public TlBox HEAD, BODY, PLAT; public TlY Y; public float[] UNDER;
+        public TlSurge SURGE; public TlFloat FLOAT; public TlSpit SPIT; public TlDmg DMG;
+        public Dictionary<string, float>[] WEIGHT; public string[] LINE_IN, LINE_OUT;
+    }
+
     public class AttackFrames { public string[] pre, act, post; public string rec; }
     /// <summary>Điểm neo và thứ tự khung hình (frames.json).</summary>
     public class FrameData
@@ -58,12 +72,13 @@ namespace LongThan.Core
     /// <summary>Chỗ giữ số liệu dùng chung. Gọi Load một lần lúc khởi động (hoặc trong test).</summary>
     public static class Cfg
     {
-        public static Tuning T; public static BossTuning BT; public static FrameData F;
+        public static Tuning T; public static BossTuning BT; public static FrameData F; public static SubTuning TL;
         public const int FW = 150, FH = 110, SPR_W = 41, SPR_H = 84, PIVOT_X = 30, PIVOT_Y = 45;
         public const float VH = 360, STEP = 1f / 120f;
 
-        public static void Load(string tuningJson, string bossJson, string framesJson)
+        public static void Load(string tuningJson, string bossJson, string framesJson, string subJson)
         {
+            TL = Json.Bind<SubTuning>(Json.Parse(subJson));
             T = Json.Bind<Tuning>(Json.Parse(tuningJson));
             BT = Json.Bind<BossTuning>(Json.Parse(bossJson));
             F = Json.Bind<FrameData>(Json.Parse(framesJson));

@@ -44,5 +44,7 @@ namespace LongThan.Core
     public class TileRect { public int x, y, w, h; }
     public class WaterRise { public float triggerX, x0, x1, startY, endY, speed, delay; public TileRect lockTiles; }
     public class BossArena { public float x0, x1, gateX, closeAtX, floorY; public TileRect gate; }
+    /// <summary>Đấu trường trùm phụ: x0/x1/closeAtX/surface tính px; platRow là hàng ô lưng rắn khi nổi; gate/exit tính ô.</summary>
+    public class SubArena { public float x0, x1, closeAtX, surface; public int platRow; public TileRect gate, exit; }
     public class Talk { public string[] lines; public float t, dur; public string who; }
 }

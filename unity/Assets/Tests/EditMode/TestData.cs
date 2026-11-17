@@ -18,7 +18,7 @@ namespace LongThan.Tests
         public static void Ensure()
         {
             if (loaded) return; loaded = true;
-            Cfg.Load(Read("tuning"), Read("boss-thuy-tinh"), Read("frames"));
+            Cfg.Load(Read("tuning"), Read("boss-thuy-tinh"), Read("frames"), Read("boss-thuong-luong"));
         }
         /// <summary>Một lượt chơi màn Hồng Thủy, số ngẫu nhiên cố định, không âm thanh.</summary>
         public static Game MakeGame(uint seed = 1) { Ensure(); return Game.Create(Levels.HongThuy(), new InputState(), null, seed); }

@@ -4,6 +4,7 @@ import { BG, FR, ready } from '../core/assets';
 import type { Game } from '../core/game';
 import { drawBolts, drawPlayer } from './player';
 import { drawBoss, drawBossHud, drawTalk, drawWater } from './boss';
+import { drawSub, drawSubHud } from './thuongLuong';
 import type { View } from './view';
 
 function parallax(v: View, im: HTMLImageElement | undefined, f: number, y: number, k: number): void {
@@ -26,12 +27,18 @@ export function draw(g: Game, v: View): void {
 
   const ox = Math.round(cam.x), oy = Math.round(cam.y), i0 = Math.floor(ox / TS), i1 = i0 + Math.ceil(VW / TS) + 2;
   for (let j = 0; j < map.h; j++) for (let i = i0; i < i1; i++) {
-    if (!map.solidCell(i, j)) continue;
+    const c = map.cells[j][i]; if (c === 0 || c === 2) continue;
     const X = i * TS - ox, Y = j * TS - oy;
+    if (c === 3) {   // cột đá Sơn Tinh: đá nâu, vân vàng
+      cx.fillStyle = '#5b4a3a'; cx.fillRect(X + 2, Y, TS - 4, TS); cx.fillStyle = '#72604b'; cx.fillRect(X + 2, Y, 6, TS);
+      cx.fillStyle = '#C9A227'; cx.fillRect(X + 14, Y + 8, 4, 16); cx.fillRect(X + 10, Y + 14, 12, 3);
+      if (map.cells[j - 1]?.[i] !== 3) { cx.fillStyle = '#e0c060'; cx.fillRect(X + 2, Y, TS - 4, 3); }
+      continue;
+    }
     cx.fillStyle = '#2e3346'; cx.fillRect(X, Y, TS, TS);
     cx.fillStyle = '#3c4259'; cx.fillRect(X, Y, TS, 5);
     cx.fillStyle = '#262a3a'; cx.fillRect(X, Y + TS - 2, TS, 2); cx.fillRect(X + TS - 2, Y, 2, TS);
-    if (!map.solidCell(i, j - 1)) { cx.fillStyle = '#C9A227'; cx.fillRect(X, Y, TS, 2); }
+    if (!map.solidCell(i, j - 1) || map.cells[j - 1][i] === 2) { cx.fillStyle = '#C9A227'; cx.fillRect(X, Y, TS, 2); }
   }
   g.checkpoints.forEach((c, i) => { const X = c.x - ox, Y = c.y - oy; cx.fillStyle = '#888'; cx.fillRect(X, Y - 52, 3, 52); cx.fillStyle = i <= g.cpIndex ? '#d8352a' : '#555'; cx.fillRect(X + 3, Y - 52, 22, 14); });
 
@@ -52,7 +59,7 @@ export function draw(g: Game, v: View): void {
     const im = FR['fx_shot' + (1 + Math.floor(b.t * 12) % 3)];
     if (ready(im)) { cx.save(); cx.translate(Math.round(b.x - ox), Math.round(b.y - oy)); cx.scale(-Math.sign(b.vx) || 1, 1); cx.drawImage(im, -15, -11); cx.restore(); }
   }
-  drawBoss(g, v, ox, oy);
+  drawBoss(g, v, ox, oy); drawSub(g, v, ox, oy);
   if (!(g.P.inv > 0 && Math.floor(g.P.inv * 20) % 2)) drawPlayer(g, v);   // nhấp nháy khi bất tử
   for (const p of g.parts) { cx.globalAlpha = Math.min(1, p.life * 3); cx.fillStyle = p.c; cx.fillRect(Math.round(p.x - ox), Math.round(p.y - oy), 3, 3); }
   cx.globalAlpha = 1; drawBolts(g, v, ox, oy); drawWater(g, v, ox, oy);
@@ -76,7 +83,7 @@ export function draw(g: Game, v: View): void {
   cx.fillStyle = '#000'; cx.fillRect(14, 74, 12, T.HP * 6 + 4);
   for (let i = 0; i < T.HP; i++) { cx.fillStyle = i < g.P.hp ? (g.hero === 'tv' ? '#7fe3ff' : '#ffb347') : '#2a2a3a'; cx.fillRect(16, 76 + (T.HP - 1 - i) * 6, 8, 4); }
   if (g.flashT > 0) { cx.globalAlpha = g.flashT / 0.06 * 0.35; cx.fillStyle = '#fff1d6'; cx.fillRect(0, 0, VW, VH); cx.globalAlpha = 1; }
-  drawBossHud(g, v); drawTalk(g, v);
+  drawBossHud(g, v); drawSubHud(g, v); drawTalk(g, v);
   const B = g.boss;
   if (B.st === 'dead' && B.t > 2.4) {
     cx.fillStyle = 'rgba(0,0,0,.5)'; cx.fillRect(0, VH / 2 - 34, VW, 60);

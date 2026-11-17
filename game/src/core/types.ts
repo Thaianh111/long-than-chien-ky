@@ -45,4 +45,9 @@ export interface WaterZone { x0: number; x1: number; y: number; deep?: boolean }
 export interface WaterRise { triggerX: number; x0: number; x1: number; startY: number; endY: number; speed: number; delay: number; lockTiles: { x: number; y: number; w: number; h: number } }
 export interface BossArena { x0: number; x1: number; gateX: number; closeAtX: number; floorY: number; gate: { x: number; y: number; w: number; h: number } }
 
+/** Đấu trường trùm phụ: x0/x1/closeAtX/surface tính px; platRow là hàng ô của lưng rắn khi nổi; gate/exit tính ô. */
+export interface SubArena { x0: number; x1: number; closeAtX: number; surface: number; platRow: number; gate: { x: number; y: number; w: number; h: number }; exit: { x: number; y: number; w: number; h: number } }
+/** Cột đá Sơn Tinh: [cột x, hàng chân, số ô lúc đầu, số ô khi dựng hết] (tính ô). */
+export type PillarDef = [number, number, number, number];
+
 export interface Talk { lines: string[]; t: number; dur: number; who?: string }

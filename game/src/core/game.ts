@@ -4,6 +4,8 @@ import { TileMap } from '../world/tilemap';
 import type { LevelDef } from '../levels/hongThuy';
 import { createBoss, type Boss, type BossShot } from '../boss/state';
 import type { Input } from './input';
+import { createSub, type SubBoss } from '../boss/thuongLuong';
+import { createPillars, type Pillar } from '../world/pillars';
 
 /** Âm thanh mà logic game gọi tới (tách riêng để test chạy không cần WebAudio). */
 export interface Sfx {
@@ -18,6 +20,8 @@ export interface Game {
   hero: HeroId; P: Player; input: Input; sfx: Sfx; rng: () => number;
   foes: Foe[]; bolts: Bolt[]; eshots: EnemyShot[]; parts: Particle[]; fx: Fx[];
   boss: Boss; bproj: BossShot[];
+  /** Trùm phụ Thuồng Luồng và các cột đá Sơn Tinh. */
+  sub: SubBoss; pillars: Pillar[];
   arenaWater: number; arenaHaz: number; lvWaterRise: { y: number; t: number } | null; talk: Talk | null;
   /** Hệ số vật lý hiện tại (dưới nước < 1). */
   phys: { run: number; grav: number; fall: number };
@@ -51,10 +55,12 @@ export function freshPlayer(cp: Checkpoint): Player {
 export function createGame(level: LevelDef, input: Input, sfx: Sfx = silentSfx, rng: () => number = Math.random): Game {
   const map = new TileMap(level.w, level.h, level.ts);
   for (const [x, y, w, h, v] of level.tiles) map.rect(x, y, w, h, v ?? 1);
-  return {
+  const g: Game = {
     level, map, checkpoints: level.checkpoints, cpIndex: 0, hero: 'xl', P: freshPlayer(level.checkpoints[0]), input, sfx, rng,
     foes: level.foes.map(([t, x, y]) => makeFoe(t, x, y, level.ts, rng)), bolts: [], eshots: [], parts: [], fx: [],
-    boss: createBoss(level.arena), bproj: [], arenaWater: 0, arenaHaz: 0, lvWaterRise: null, talk: null,
+    boss: createBoss(level.arena), bproj: [], sub: createSub({ level }), pillars: [], arenaWater: 0, arenaHaz: 0, lvWaterRise: null, talk: null,
     phys: { run: 1, grav: 1, fall: 1 }, hitstop: 0, shake: 0, flashT: 0, hits: 0, kills: 0, time: 0,
   };
+  g.pillars = createPillars(g);
+  return g;
 }

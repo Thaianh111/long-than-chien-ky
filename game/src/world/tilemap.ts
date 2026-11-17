@@ -1,6 +1,6 @@
 import type { Body } from '../core/types';
 
-/** Bản đồ ô gạch: 1 = gạch đặc, 0 = trống. Mỗi ô TS×TS px. */
+/** Bản đồ ô gạch: 0 = trống, 1 = gạch, 2 = đặc nhưng không vẽ (lưng Thuồng Luồng), 3 = cột đá Sơn Tinh. Mỗi ô TS×TS px. */
 export class TileMap {
   readonly cells: Uint8Array[];
   constructor(readonly w: number, readonly h: number, readonly ts = 32) {
@@ -13,7 +13,7 @@ export class TileMap {
   }
   /** Ô tại (i, j) có phải gạch đặc không. */
   solidCell(i: number, j: number): boolean {
-    return i >= 0 && i < this.w && j >= 0 && j < this.h && this.cells[j][i] === 1;
+    return i >= 0 && i < this.w && j >= 0 && j < this.h && this.cells[j][i] !== 0;
   }
   /** Điểm (px, py) theo pixel có nằm trong gạch đặc không. */
   solidAt(px: number, py: number): boolean {
