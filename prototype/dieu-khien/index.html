@@ -77,6 +77,8 @@ const T = {
   RUN_BOB: 0,             // nhún thêm bằng code (0 vì khung chạy đã tự nhún)
   GHOST_EVERY: 0.05,      // bao lâu để lại 1 bóng mờ khi lướt (giây)
   RECOVER: 0.09,
+  WALLJUMP_ANIM: 0.2,     // thời gian dùng dáng đạp/bật tường sau khi nhảy tường (giây)
+  WALLKICK_ANIM: 0.06,    // trong đó, dáng chân đạp tường (quay mặt vào tường)
   DASH_PUSH: 0.05,        // giữ dáng đạp chân lúc bắt đầu lướt (giây)
   DASH_STOP: 0.1,         // dáng thắng gót khi lướt xong mà buông tay
   TAKEOFF_TIME: 0.05,     // giữ dáng nhún bật lên lúc mới rời đất (giây)
@@ -90,7 +92,7 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -207,6 +209,7 @@ function updateAnim(dt) {
   if (P.wasDash && !P.dash && P.ground && !P.atk && !held.left && !held.right) { P.recFrame = ANIM.dash_stop[0]; P.recover = T.DASH_STOP; }
   P.wasDash = !!P.dash;
   P.recover = Math.max(0, P.recover - dt);
+  P.wjT = Math.max(0, (P.wjT || 0) - dt); if (P.ground || P.wall || P.atk || P.dash) P.wjT = 0;
   P.landT = Math.max(0, (P.landT || 0) - dt); if (!P.ground || P.atk || P.dash) P.landT = 0;
   if (P.atk || P.dash || (!P.ground && P.recover)) P.recover = 0;
   P.airT = P.ground ? 0 : P.airT + dt;
@@ -285,7 +288,7 @@ function updatePlayer(dt) {
       P.dashMomentum = !!held.dash;
       P.vx = -w * (P.dashMomentum ? T.DASH_SPEED : climb ? T.WALL_KICK_VX : T.WALL_JUMP_VX);
       P.vy = -T.WALL_JUMP_VY; squash(0.85, 1.15); P.face = climb && !P.dashMomentum ? w : -w;
-      P.wallLock = climb && !P.dashMomentum ? T.WALL_KICK_LOCK : T.WALL_JUMP_LOCK; P.jumpBuf = 0; P.wall = 0;
+      P.wallLock = climb && !P.dashMomentum ? T.WALL_KICK_LOCK : T.WALL_JUMP_LOCK; P.jumpBuf = 0; P.wall = 0; P.wjT = T.WALLJUMP_ANIM; P.wjDir = w;
       sparks(P.x + (w > 0 ? P.w : 0), P.y + P.h - 8, 6, '#ffd34d');
     }
   }
@@ -412,7 +415,9 @@ function drawSwing() {
 
 // Điểm neo của từng dáng = vị trí HÔNG trong khung 150x110 (chân luôn chạm đáy khung).
 // Trước đây mọi dáng đều canh giữa khung nên đổi dáng là thân người nhảy ngang tới 30px -> giật.
-const FA = { s3_1: 81, s3_2: 86, s3_3: 77, s3_4: 74, s3_5: 75, s3_6: 78,
+// w1 neo theo tay chạm tường (mép phải hitbox), không theo hông
+const FA = { w1: 83, w2: 76, w3: 76,
+  s3_1: 81, s3_2: 86, s3_3: 77, s3_4: 74, s3_5: 75, s3_6: 78,
   s2_1: 72, s2_2: 75, s2_3: 77, s2_4: 83, s2_5: 85,
   s1_1: 78, s1_2: 77, s1_3: 76, s1_4: 71, s1_5: 79,
   dash1: 75, dash2: 67, dash3: 70,
@@ -422,7 +427,7 @@ const FA = { s3_1: 81, s3_2: 86, s3_3: 77, s3_4: 74, s3_5: 75, s3_6: 78,
 // Tâm vệt chém (vai) so với chân, theo từng nhát
 const SWING_AT = { 0: { x: 6, y: -58 }, 1: { x: 4, y: -60 }, 2: { x: 2, y: -52 }, air: { x: 2, y: -58 } };
 // Thêm khung mới: bỏ file vào frames/ rồi ghi tên vào đây theo thứ tự (vd run: ['run1','run2',...]).
-const ANIM = { idle: ['idle'], run: ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'], takeoff: ['jump1'], jump_up: ['jump2'], apex: ['jump3'], jump_down: ['jump4'], land: ['jump5'], wall: ['jump'], dash: ['dash2'], dash_start: ['dash1'], dash_stop: ['dash3'] };
+const ANIM = { idle: ['idle'], run: ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'], takeoff: ['jump1'], jump_up: ['jump2'], apex: ['jump3'], jump_down: ['jump4'], land: ['jump5'], wall: ['w1'], wall_kick: ['w2'], wall_jump: ['w3'], dash: ['dash2'], dash_start: ['dash1'], dash_stop: ['dash3'] };
 
 // Khung từng nhát chém: pre = lấy đà, act = lúc vung (chia đều theo thời gian vung),
 // post = cuối nhát (giữ tới khi hết nhát), rec = dáng thu đao khi dứt combo.
@@ -448,6 +453,7 @@ function pickFrame() {
   if (P.dash) return P.ground && P.dashHeld < T.DASH_PUSH ? seq('dash_start', time) : seq('dash', time);
   if (P.wall) return seq('wall', time);
   if (!P.ground) {
+    if (P.wjT > 0) return P.wjT > T.WALLJUMP_ANIM - T.WALLKICK_ANIM ? ANIM.wall_kick[0] : ANIM.wall_jump[0];
     if (P.vy < 0 && P.airT < T.TAKEOFF_TIME) return seq('takeoff', P.airT);
     return seq(P.vy < -T.APEX_VY ? 'jump_up' : P.vy < T.APEX_VY ? 'apex' : 'jump_down', P.airT);
   }
@@ -488,8 +494,7 @@ function drawPlayer(alpha) {
   if (!P.ground && !P.wall && !P.atk && !P.dash) rot = Math.max(-0.03, Math.min(0.04, P.vy / 20000));
   if (P.dash) rot = 0;
   cx.save();
-  cx.translate(sx, sy - Math.round(bob)); cx.scale(f, 1);
-  if (P.wall) { cx.scale(-1, 1); cx.translate(-6, 0); }
+  cx.translate(sx, sy - Math.round(bob)); cx.scale(name === ANIM.wall_kick[0] ? P.wjDir : f, 1);
   cx.rotate(rot);
   cx.scale(P.sqx, P.sqy);
   if (P.atk || P.swing.length) { const sp = SWING_AT[P.atkAir ? 'air' : P.combo] || SWING_AT[0]; cx.save(); cx.translate(sp.x, sp.y); drawSwing(); cx.restore(); }
