@@ -30,6 +30,7 @@ Engine: Unity, PC + điện thoại.
   - Chém kiểu Zero: vệt bán nguyệt (`drawSwing`/`crescent`, chỉnh `ARC_*`), trúng khi đao quét qua `HIT_AT`, khựng `HITSTOP` (nhát cuối x`FINISH_STOP`), vết cắt + vòng nổ + chớp màn hình nhát cuối, tiếng vút/tiếng trúng bằng WebAudio. Nhảy 2 bậc: `AIR_JUMPS`, `AIR_JUMP_VEL`.
   - Đổi nhân vật: màn chọn nhân vật lúc vào, nút ⇄ trên cùng / phím Q. Thanh Vũ bắn Thần Nỏ: bấm = tên thường, giữ 0,35 giây = nạp cấp 1, giữ 1 giây = nạp đầy (tên to xuyên quái); bắn được khi đứng, chạy, nhảy, bám tường (quay lưng vào tường). Thông số ở `T.TV`, đầu nỏ theo dáng ở `MZ`.
   - Thanh Vũ đã đủ bộ khung (Gemini, 2026-11-17): đứng thở 4, bắn đứng 4, chạy 4, chạy bắn 4, nhảy 5, nhảy bắn 5, lướt 3, bám tường 3. Tấm gốc ở `art/characters/thanh_vu/sheets/`.
+  - Xuất hiện kiểu Mega Man X8: tia năng lượng rơi xuống rồi hiện người từ chân lên (`warpIn`, `WARP_*`), khi chọn/đổi nhân vật và khi hồi sinh. Tiếng hô tổng hợp bằng WebAudio (`shout`, bảng `CRIES`, âm lượng `VOICE`) khi chém từng nhát và khi bắn theo cấp nạp.
   - Thêm khung mới: bỏ file vào `frames/`, ghi tên vào `ANIM` (hoặc `ATKF` cho nhát chém) và điểm neo hông vào `FA` (`FY` nếu cần dịch dọc).
   - Xích Long đã đủ bộ khung (Gemini, 2026-11-17): chạy 8, nhảy 5, lướt 3, chém nhát 1/2/3 = 5/5/6, bám + đạp tường 3, đứng thở 4, chém trên không 5. Tấm gốc ở `art/characters/xich_long/sheets/`.
 - `tools/cat_khung.py` — cắt tấm hình nhiều dáng nền xanh lá thành các khung 150×110, cùng tỉ lệ, ép về bảng màu chung.

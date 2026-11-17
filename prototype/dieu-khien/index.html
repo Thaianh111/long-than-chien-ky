@@ -117,6 +117,10 @@ const T = {
   LAND_TIME: 0.09,        // dáng khuỵu khi đáp (chỉ khi đứng yên, đang chạy thì chạy luôn)
   LAND_MIN_VY: 300,       // rơi nhanh hơn mức này mới khuỵu          // giữ dáng chém thêm chút sau nhát cuối cho khỏi giật về
   // chém xoay trên không: quay 2 vòng (a1 = a0 + 4π), mỗi vòng trúng 1 lần (spins)
+  // --- xuất hiện: tia năng lượng rơi xuống (kiểu Mega Man X8) ---
+  WARP_FALL: 0.32,        // tia rơi từ trên trời xuống bao lâu (giây)
+  WARP_FORM: 0.28,        // tia chạm đất rồi hiện thành người bao lâu
+  VOICE: 0.8,             // âm lượng tiếng hô (0 = tắt)
   // --- THANH VŨ: Thần Nỏ ---
   TV: {
     CHARGE1: 0.35,        // giữ nút bao lâu thì lên nạp cấp 1 (giây)
@@ -207,7 +211,7 @@ function resetPlayer(cp) {
     ox: cp.x, oy: cp.y - P.h, sqx: 1, sqy: 1, vsx: 0, vsy: 0, gait: 0, ghostT: 0, recover: 0, recFrame: null, turnT: 0, lastFace: 1, airT: 0 });
 }
 let cpIndex = 0; resetPlayer(checkpoints[0]);
-function respawn() { resetPlayer(checkpoints[cpIndex]); }
+function respawn() { resetPlayer(checkpoints[cpIndex]); warpIn(); }
 
 function collideX(o) {
   const top = o.y + 1, bot = o.y + o.h - 1;
@@ -229,6 +233,7 @@ function startAttack() {
   P.atk = step; P.atkT = 0; P.hitSet = new Set(); P.comboQueued = false; P.atkAir = air; P.swing = []; P.spinK = 0;
   P.arc = { a0: step.a0, a1: step.a1, from: step.from, to: step.to, len: step.len, big: step.dmg > 1, t: 0, at: SWING_AT[air ? 'air' : P.combo] || SWING_AT[0] };
   sfxSwing(step.dmg > 1 ? 1.4 : air ? 1.15 : 1);
+  shout(air ? 'xl_air' : 'xl_' + P.combo);
   if (!air && step.lunge) P.vx = P.face * step.lunge * 2.2;
 }
 const easeOut = t => 1 - Math.pow(1 - t, 3);
@@ -264,7 +269,25 @@ function updateAnim(dt) {
   P.airT = P.ground ? 0 : P.airT + dt;
 }
 
+function warpIn() {
+  P.warp = { t: 0 }; P.vx = 0; P.vy = 0; P.atk = null; P.arc = null; P.aiming = false; P.dash = 0;
+  sfxWarp();
+}
+function updateWarp(dt) {
+  const W = P.warp; W.t += dt; P.vx = 0;
+  // giữ người trên mặt đất trong lúc hiện hình
+  P.vy = Math.min(P.vy + T.GRAVITY * dt, T.MAX_FALL); P.y += P.vy * dt; collideY(P);
+  if (!W.landed && W.t >= T.WARP_FALL) {
+    W.landed = true; const cx0 = P.x + P.w / 2, by = P.y + P.h, col = HERO === 'tv' ? '#7fe3ff' : '#ff8a2b';
+    fx.push({ k: 'ring', x: cx0, y: by - 4, life: 0.3, max: 0.3, big: true, col });
+    for (let i = 0; i < 18; i++) { const a = -Math.PI * Math.random(), sp = 120 + Math.random() * 260;
+      parts.push({ x: cx0, y: by - 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.3 + Math.random() * 0.25, c: i % 2 ? col : '#ffffff' }); }
+    shake = Math.max(shake, 3); sfxLand();
+  }
+  if (W.t >= T.WARP_FALL + T.WARP_FORM) { P.warp = null; squash(1.12, 0.9); }
+}
 function updatePlayer(dt) {
+  if (P.warp) { updateWarp(dt); updateAnim(dt); return; }
   const dirIn = (held.right ? 1 : 0) - (held.left ? 1 : 0);
   P.coyote = P.ground ? T.COYOTE : Math.max(0, P.coyote - dt);
   P.jumpBuf = pressed.jump ? T.JUMP_BUFFER : Math.max(0, P.jumpBuf - dt);
@@ -433,7 +456,7 @@ function updateFoes(dt) {
 
 /* ---------------- Thanh Vũ: Thần Nỏ ---------------- */
 let HERO = 'xl';
-document.querySelectorAll('#menu button').forEach(b => b.addEventListener('click', () => { swapHero(b.dataset.hero); document.getElementById('menu').style.display = 'none'; try { audio(); } catch (e) {} }));
+document.querySelectorAll('#menu button').forEach(b => b.addEventListener('click', () => { try { audio(); } catch (e) {} document.getElementById('menu').style.display = 'none'; swapHero(b.dataset.hero); }));
 document.getElementById('swapBtn').addEventListener('click', e => { e.currentTarget.blur(); swapHero(); });
 const bolts = [];
 function swapHero(to) {
@@ -441,8 +464,7 @@ function swapHero(to) {
   document.getElementById('swapBtn').textContent = '⇄ Đổi sang ' + (HERO === 'xl' ? 'Thanh Vũ' : 'Xích Long');
   document.querySelector('.btn[data-k="attack"]').textContent = HERO === 'tv' ? 'BẮN' : 'CHÉM';
   P.atk = null; P.arc = null; P.combo = 0; P.aiming = false; P.shootT = 0; P.recover = 0;
-  fx.push({ k: 'ring', x: P.x + P.w / 2, y: P.y + P.h / 2, life: 0.3, max: 0.3, big: true });
-  sparks(P.x + P.w / 2, P.y + P.h / 2, 14, HERO === 'tv' ? '#7fe3ff' : '#ffb347');
+  warpIn();
 }
 function chargeLv() { const c = P.charge || 0; return c >= T.TV.CHARGE2 ? 2 : c >= T.TV.CHARGE1 ? 1 : 0; }
 function tvRunning() { return P.ground && !P.dash && Math.abs(P.vx) > 40; }
@@ -466,7 +488,7 @@ function updateShoot(dt) {
     squash(L === 2 ? 0.86 : 0.95, L === 2 ? 1.08 : 1.02);
     fx.push({ k: 'ring', x: m.x, y: m.y, life: 0.12 + L * 0.05, max: 0.12 + L * 0.05, big: L === 2, col: '#bff4ff' });
     if (L === 2) shake = T.SHAKE * 1.2;
-    sfxShoot(L);
+    sfxShoot(L); shout('tv_' + L);
   }
 }
 function updateBolts(dt) {
@@ -538,6 +560,59 @@ function sfxCharge(lv) {
   const ac = AC; if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
   o.type = 'sine'; o.frequency.setValueAtTime(lv === 2 ? 880 : 520, t); o.frequency.exponentialRampToValueAtTime(lv === 2 ? 1760 : 880, t + 0.15);
   g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.22);
+}
+// ---- Tiếng hô tổng hợp bằng WebAudio (giọng "máy" kiểu game 16-bit, không dùng file) ----
+// Nguồn: sóng răng cưa ở cao độ giọng + tiếng thở (âm h), lọc qua 3 dải formant để ra nguyên âm.
+const VOW = { a: [800, 1250, 2600], e: [500, 1900, 2600], i: [320, 2300, 3000], o: [520, 900, 2500], u: [350, 800, 2300] };
+const CRIES = {   // [nguyên âm..], cao độ đầu, cao độ cuối, thời gian, âm h đầu, độ to
+  xl_0:   { v: ['a'], f0: [150, 112], d: 0.17, h: 0.05, g: 1 },              // "Hạ!"
+  xl_1:   { v: ['i', 'a'], f0: [165, 125], d: 0.19, h: 0.02, g: 1 },        // "Ya!"
+  xl_2:   { v: ['a', 'i', 'a', 'a'], f0: [140, 175, 105], d: 0.46, h: 0.06, g: 1.25 },  // "Hây-yaaa!"
+  xl_air: { v: ['i', 'a', 'a'], f0: [175, 135], d: 0.3, h: 0.04, g: 1.1 },  // "Hyaa!"
+  tv_0:   { v: ['a'], f0: [205, 170], d: 0.09, h: 0.04, g: 0.6 },           // "Hự!" ngắn
+  tv_1:   { v: ['e', 'a'], f0: [215, 165], d: 0.18, h: 0.04, g: 0.9 },      // "Hây!"
+  tv_2:   { v: ['a', 'a', 'o'], f0: [190, 230, 150], d: 0.42, h: 0.07, g: 1.2 },  // "Haaa!" lúc nạp đầy
+};
+let lastShout = 0;
+function shout(key) {
+  const ac = AC, C = CRIES[key]; if (!ac || !C || !T.VOICE) return;
+  const t = ac.currentTime; if (t - lastShout < 0.12 && key === 'tv_0') return; lastShout = t;
+  const out = ac.createGain(); out.gain.setValueAtTime(0.0001, t);
+  out.gain.exponentialRampToValueAtTime(0.5 * C.g * T.VOICE, t + C.h + 0.015);
+  out.gain.setValueAtTime(0.5 * C.g * T.VOICE, t + C.d * 0.6);
+  out.gain.exponentialRampToValueAtTime(0.0001, t + C.d + C.h);
+  out.connect(ac.destination);
+  // âm h: tiếng xì ngắn ở đầu
+  if (C.h) { const n = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    n.buffer = noiseBuf(ac); f.type = 'bandpass'; f.frequency.value = 1600; f.Q.value = 0.8;
+    g.gain.setValueAtTime(0.25 * C.g * T.VOICE, t); g.gain.exponentialRampToValueAtTime(0.0001, t + C.h + 0.04);
+    n.connect(f).connect(g).connect(ac.destination); n.start(t); n.stop(t + C.h + 0.06); }
+  // giọng: răng cưa + rung nhẹ, cao độ đi theo đường f0
+  const o = ac.createOscillator(); o.type = 'sawtooth'; const t0 = t + C.h * 0.7;
+  o.frequency.setValueAtTime(C.f0[0], t0);
+  for (let i = 1; i < C.f0.length; i++) o.frequency.linearRampToValueAtTime(C.f0[i], t0 + C.d * i / (C.f0.length - 1));
+  const vib = ac.createOscillator(), vg = ac.createGain(); vib.frequency.value = 7; vg.gain.value = 4; vib.connect(vg).connect(o.frequency);
+  const pre = ac.createGain(); pre.gain.value = 0.6; o.connect(pre);
+  [1, 0.55, 0.25].forEach((amp, k) => {
+    const f = ac.createBiquadFilter(), g = ac.createGain(); f.type = 'bandpass'; f.Q.value = k ? 9 : 6; g.gain.value = amp * 3;
+    C.v.forEach((v, i) => { const tt = t0 + C.d * i / Math.max(1, C.v.length - 1); i ? f.frequency.linearRampToValueAtTime(VOW[v][k], tt) : f.frequency.setValueAtTime(VOW[v][k], tt); });
+    pre.connect(f).connect(g).connect(out);
+  });
+  o.start(t0); vib.start(t0); o.stop(t + C.d + C.h + 0.05); vib.stop(t + C.d + C.h + 0.05);
+}
+function sfxWarp() {               // tia rơi: tiếng vút trượt từ cao xuống
+  const ac = AC; if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'square'; o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(220, t + T.WARP_FALL);
+  g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.0001, t + T.WARP_FALL + 0.02);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t + T.WARP_FALL + 0.05);
+}
+function sfxLand() {               // chạm đất + hiện hình: "bùm" rồi "ting ting"
+  const ac = AC; if (!ac) return; const t = ac.currentTime;
+  const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(50, t + 0.18);
+  g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.22);
+  [[880, 0.08], [1320, 0.16]].forEach(([fq, dl]) => { const s = ac.createOscillator(), sg = ac.createGain(); s.type = 'sine'; s.frequency.value = fq;
+    sg.gain.setValueAtTime(0.0001, t + dl); sg.gain.exponentialRampToValueAtTime(0.12, t + dl + 0.01); sg.gain.exponentialRampToValueAtTime(0.0001, t + dl + 0.2);
+    s.connect(sg).connect(ac.destination); s.start(t + dl); s.stop(t + dl + 0.22); });
 }
 function sfxJump2() {
   const ac = AC; if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
@@ -711,7 +786,36 @@ function drawPose(name, alpha) {
   if (fr && fr.complete && fr.naturalWidth) cx.drawImage(fr, -FA[name], -FH + 2 + (FY[name] || 0));
   else if (SPR.complete && SPR.naturalWidth) cx.drawImage(SPR, -SPR_W / 2, -SPR_H);
 }
+function drawWarp(rx, ry) {
+  const W = P.warp, tv = HERO === 'tv', col = tv ? '#7fe3ff' : '#ff8a2b', glow = tv ? '#1fb7ff' : '#ff3d14';
+  const sx = Math.round(rx + P.w / 2 - cam.x), by = Math.round(ry + P.h - cam.y);
+  if (W.t < T.WARP_FALL) {
+    // tia rơi: vệt sáng dài lao từ trên xuống, đầu tia đậm, đuôi mờ
+    const k = W.t / T.WARP_FALL, head = -40 + (by + 40) * (k * k), L = 140;
+    cx.globalAlpha = 0.35; cx.fillStyle = glow; cx.fillRect(sx - 7, head - L, 14, L);
+    cx.globalAlpha = 0.9; cx.fillStyle = col; cx.fillRect(sx - 4, head - L * 0.8, 8, L * 0.8);
+    cx.globalAlpha = 1; cx.fillStyle = '#ffffff'; cx.fillRect(sx - 2, head - L * 0.6, 4, L * 0.6 + 6);
+    cx.globalAlpha = 1; return;
+  }
+  // chạm đất: cột sáng bung ra rồi co lại thành người, hình hiện từ chân lên
+  const k = Math.min(1, (W.t - T.WARP_FALL) / T.WARP_FORM);
+  const colH = (1 - k) * 90 + 10;
+  cx.globalAlpha = (1 - k) * 0.8; cx.fillStyle = col; cx.fillRect(sx - 6 - (1 - k) * 6, by - colH, 12 + (1 - k) * 12, colH);
+  cx.globalAlpha = (1 - k); cx.fillStyle = '#ffffff'; cx.fillRect(sx - 2, by - colH, 4, colH);
+  const name = pickFrame(), img = FR[name], t = tinted(name);
+  if (img && img.complete && img.naturalWidth) {
+    const reveal = Math.max(0.02, k);             // tỉ lệ thân người đã hiện (từ chân lên)
+    cx.save(); cx.translate(sx, by); cx.scale(P.face, 1);
+    const top = FH - 2, hShow = FH * reveal;
+    cx.beginPath(); cx.rect(-FW, -hShow, FW * 2, hShow + 2); cx.clip();
+    cx.globalAlpha = 1; cx.drawImage(img, -FA[name], -top + (FY[name] || 0));
+    if (t) { cx.globalCompositeOperation = 'lighter'; cx.globalAlpha = (1 - k) * 0.9; cx.drawImage(t, -FA[name], -top + (FY[name] || 0)); }
+    cx.restore();
+  }
+  cx.globalAlpha = 1;
+}
 function drawPlayer(alpha) {
+  if (P.warp) { drawWarp(P.ox + (P.x - P.ox) * alpha, P.oy + (P.y - P.oy) * alpha); return; }
   const rx = P.ox + (P.x - P.ox) * alpha, ry = P.oy + (P.y - P.oy) * alpha;
   const sx = Math.round(rx + P.w / 2 - cam.x), sy = Math.round(ry + P.h - cam.y), f = P.face;
   cx.save(); cx.globalCompositeOperation = 'lighter';
