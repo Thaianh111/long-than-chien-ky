@@ -138,7 +138,7 @@ const T = {
 const SPR = new Image(); SPR.src = 'xich-long.png';
 const SPR_W = 41, SPR_H = 84, PIVOT = { x: 30, y: 45 };   // tay cầm đao trên sprite (mặt quay phải)
 // các dáng hành động (vẽ bằng Gemini từ ảnh mẫu, đã cắt pixel): khung 150x110, chân ở giữa đáy
-const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
+const FR = {}; ['idle','run','jump','dash','windup','slash_up','slash_thrust','x_overhead','run1','run2','run3','run4','run5','run6','run7','run8','jump1','jump2','jump3','jump4','jump5','dash1','dash2','dash3','s1_1','s1_2','s1_3','s1_4','s1_5','s2_1','s2_2','s2_3','s2_4','s2_5','s3_1','s3_2','s3_3','s3_4','s3_5','s3_6','w1','w2','w3','id1','id2','id3','id4','as1','as2','as3','as4','as5','tv_mau','tv_b1','tv_b2','tv_b3','tv_b4','tv_i1','tv_i2','tv_i3','tv_i4','tv_r1','tv_r2','tv_r3','tv_r4','tv_rb1','tv_rb2','tv_rb3','tv_rb4','tv_j1','tv_j2','tv_j3','tv_j4','tv_j5'].forEach(n => { FR[n] = new Image(); FR[n].src = 'frames/f_' + n + '.png'; });
 const FW = 150, FH = 110;
 const SWING_PIVOT = { x: 10, y: -50 };   // tâm vệt chém so với chân (mặt quay phải)
 
@@ -615,6 +615,7 @@ function drawSwing() {
 // Thanh Vũ neo theo bàn chân (so khớp phần chân với hình mẫu) để bắn mà chân không xê dịch
 const FA = { tv_mau: 73, tv_b1: 73, tv_b2: 74, tv_b3: 74, tv_b4: 75, tv_i1: 75, tv_i2: 77, tv_i3: 77, tv_i4: 75,
   tv_r1: 80, tv_r2: 79, tv_r3: 77, tv_r4: 76,
+  tv_j1: 73, tv_j2: 71, tv_j3: 68, tv_j4: 72, tv_j5: 74,
   tv_rb1: 77, tv_rb2: 77, tv_rb3: 77, tv_rb4: 75,   // chạy bắn: neo theo đầu nỏ cho nỏ không rung   // chạy: neo giữa ngực (màu giáp xanh)
   as1: 83, as2: 77, as3: 79, as4: 74, as5: 77,
   id1: 72, id2: 69, id3: 70, id4: 69,
@@ -664,6 +665,11 @@ function pickFrame() {
     if (tvRunning() && (P.aiming || P.shootT > 0)) return ANIM.tv_runshoot[Math.floor(P.gait) % ANIM.tv_runshoot.length];
     if (P.shootT > 0) return P.shootT > T.TV.SHOOT_ANIM - 0.07 ? 'tv_b3' : 'tv_b4';
     if (P.aiming) return P.aimT < 0.05 ? 'tv_b1' : 'tv_b2';
+    if (!P.ground && !P.wall) {
+      if (P.vy < 0 && P.airT < T.TAKEOFF_TIME) return 'tv_j1';
+      return P.vy < -T.APEX_VY ? 'tv_j2' : P.vy < T.APEX_VY ? 'tv_j3' : 'tv_j4';
+    }
+    if (P.landT > 0 && Math.abs(P.vx) <= 40) return 'tv_j5';
     if (P.ground && !P.dash && Math.abs(P.vx) > 40) return ANIM.tv_run[Math.floor(P.gait) % ANIM.tv_run.length];
     return seq('tv_idle', time, T.IDLE_FPS);
   }
